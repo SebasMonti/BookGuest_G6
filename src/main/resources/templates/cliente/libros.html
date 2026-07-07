@@ -1,4 +1,287 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
 
-<body>
-    <div>Sí entra</div>
-</body>
+    <head th:replace="~{cliente/fragmentos :: head(#{cliente.productos.titulo})}"></head>
+
+    <body>
+
+        <header th:replace="~{cliente/fragmentos :: header('libros')}"></header>
+
+        <main class="client-page">
+
+            <style>
+                .productos-page {
+                    padding-top: 18px;
+                }
+
+                .productos-toolbar {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 18px;
+                    margin-bottom: 34px;
+                }
+
+                .productos-title-block h1 {
+                    font-size: clamp(26px, 3vw, 36px);
+                    font-weight: 700;
+                    margin-bottom: 8px;
+                }
+
+                .productos-title-block p {
+                    color: #6B7280;
+                    font-size: 14px;
+                    margin: 0;
+                }
+
+                .productos-filter-form {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    width: min(100%, 430px);
+                }
+
+                .productos-filter-form input {
+                    height: 38px;
+                    border: 1px solid #DDE2EA;
+                    background-color: #FFFFFF;
+                    padding: 0 12px;
+                    font-size: 13px;
+                    width: 100%;
+                    outline: 0;
+                }
+
+                .productos-filter-form button {
+                    height: 38px;
+                    border: 1px solid #003F63;
+                    background-color: #003F63;
+                    color: #FFFFFF;
+                    padding: 0 18px;
+                    font-size: 13px;
+                }
+
+                .productos-filter-form button:hover {
+                    background-color: #002F4A;
+                }
+
+                .productos-grid {
+                    display: grid;
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                    gap: 58px 48px;
+                }
+
+                .productos-book-link {
+                    text-decoration: none;
+                    color: inherit;
+                }
+
+                .productos-book-link:hover {
+                    color: inherit;
+                }
+
+                .book-cover-box {
+                    height: 230px;
+                    min-height: 230px;
+                    aspect-ratio: auto;
+                }
+
+                .book-cover {
+                    width: 112px;
+                    height: 160px;
+                    max-width: 112px;
+                    max-height: 160px;
+                    object-fit: cover;
+                }
+
+                .book-title {
+                    display: block;
+                    color: #111827;
+                    text-decoration: none;
+                }
+
+                .book-title:hover {
+                    color: #003F63;
+                }
+
+                .book-add {
+                    opacity: 0;
+                    visibility: hidden;
+                    transition: opacity 0.18s ease-in-out;
+                }
+
+                .book-card:hover .book-add,
+                .book-cover-box:hover .book-add {
+                    opacity: 1;
+                    visibility: visible;
+                }
+
+                .productos-empty {
+                    background-color: #FFFFFF;
+                    border: 1px solid #E5E7EB;
+                    padding: 34px;
+                    color: #6B7280;
+                    text-align: center;
+                    font-size: 14px;
+                }
+
+                .productos-category-row {
+                    margin-bottom: 42px;
+                }
+
+                @media (max-width: 992px) {
+                    .productos-toolbar {
+                        flex-direction: column;
+                        align-items: stretch;
+                    }
+
+                    .productos-filter-form {
+                        width: 100%;
+                    }
+
+                    .productos-grid {
+                        grid-template-columns: repeat(2, minmax(0, 1fr));
+                    }
+                }
+
+                @media (max-width: 576px) {
+                    .productos-grid {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .productos-filter-form {
+                        flex-direction: column;
+                    }
+
+                    .productos-filter-form button {
+                        width: 100%;
+                    }
+                }
+            </style>
+
+            <section class="productos-page">
+
+                <div class="productos-toolbar">
+                    <div class="productos-title-block">
+                        <div class="section-marker">
+                            [[#{cliente.productos.etiqueta}]]
+                        </div>
+
+                        <h1>[[#{cliente.productos.titulo}]]</h1>
+
+                        <p th:if="${busqueda == null or busqueda.isBlank()}">
+                            [[#{cliente.libros.catalogoCompleto}]]
+                        </p>
+
+                        <p th:if="${busqueda != null and !busqueda.isBlank()}">
+                            [[#{cliente.libros.resultadosPara}]]
+                            <strong th:text="${busqueda}"></strong>
+                        </p>
+                    </div>
+
+                    <form th:action="@{/cliente/libros}" method="get" class="productos-filter-form">
+                        <input type="text"
+                               name="busqueda"
+                               th:value="${busqueda}"
+                               th:placeholder="#{cliente.libros.buscar.placeholder}"/>
+
+                        <button type="submit">
+                            [[#{accion.buscar}]]
+                        </button>
+                    </form>
+                </div>
+
+                <div th:if="${categorias != null and !categorias.empty}" class="category-row productos-category-row">
+                    <a th:href="@{/cliente/libros}"
+                       class="category-btn"
+                       th:classappend="${busqueda == null or busqueda.isBlank()} ? ' active'">
+                        [[#{inventario.todos}]]
+                    </a>
+
+                    <a th:each="categoria : ${categorias}"
+                       th:href="@{/cliente/libros(busqueda=${categoria.descripcion})}"
+                       class="category-btn"
+                       th:text="${categoria.descripcion}">
+
+                    </a>
+                </div>
+
+                <div th:if="${libros != null and !libros.empty}" class="book-grid productos-grid">
+
+                    <article th:each="libro : ${libros}" class="book-card">
+
+                        <div class="book-cover-box">
+
+                            <div class="book-actions">
+                                <a th:href="@{/cliente/libro/{idLibro}(idLibro=${libro.idLibro})}"
+                                   class="book-action"
+                                   th:title="#{cliente.icono.favorito}">
+                                    <i class="fa-regular fa-heart"></i>
+                                </a>
+
+                                <a th:href="@{/cliente/libro/{idLibro}(idLibro=${libro.idLibro})}"
+                                   class="book-action"
+                                   th:title="#{cliente.icono.verDetalle}">
+                                    <i class="fa-regular fa-eye"></i>
+                                </a>
+                            </div>
+
+                            <a th:href="@{/cliente/libro/{idLibro}(idLibro=${libro.idLibro})}"
+                               class="productos-book-link">
+
+                                <img th:if="${libro.rutaImagen != null and !libro.rutaImagen.isBlank()}"
+                                     th:src="${libro.rutaImagen}"
+                                     th:alt="${libro.titulo}"
+                                     class="book-cover"/>
+
+                                <div th:if="${libro.rutaImagen == null or libro.rutaImagen.isBlank()}"
+                                     class="book-cover-placeholder visible">
+                                    <span th:text="${libro.titulo}"></span>
+                                </div>
+                            </a>
+
+                            <a th:href="@{/cliente/libro/{idLibro}(idLibro=${libro.idLibro})}"
+                               class="book-add">
+                                [[#{cliente.carrito.anadir}]]
+                            </a>
+                        </div>
+
+                        <a th:href="@{/cliente/libro/{idLibro}(idLibro=${libro.idLibro})}"
+                           class="book-title"
+                           th:text="${libro.titulo}"></a>
+
+                        <div class="book-author"
+                             th:text="${libro.autor != null ? libro.autor.nombre : #messages.msg('cliente.libro.sinAutor')}"></div>
+
+                        <div>
+                            <span class="book-price">
+                                ₡<span th:text="${#numbers.formatDecimal(libro.precio, 1, 'COMMA', 0, 'POINT')}">0</span>
+                            </span>
+
+                            <span class="book-rating">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star-half-stroke"></i>
+                                <span>
+                                    (<span th:text="${libro.idLibro + 35}">35</span>)
+                                </span>
+                            </span>
+                        </div>
+                    </article>
+                </div>
+
+                <div th:if="${libros == null or libros.empty}" class="productos-empty">
+                    [[#{cliente.libros.sinResultados}]]
+                </div>
+
+            </section>
+
+        </main>
+
+        <footer th:replace="~{cliente/fragmentos :: footer}"></footer>
+
+        <section th:replace="~{cliente/fragmentos :: scripts}"></section>
+    </body>
+</html>

@@ -1,4 +1,420 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
 
-<body>
-    <div>Sí entra</div>
-</body>
+    <head th:fragment="head">
+        <title>[[#{aplicacion.titulo}]]</title>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+        <link th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}" rel="stylesheet"/>
+        <link th:href="@{/webjars/font-awesome/7.2.0/css/all.css}" rel="stylesheet"/>
+
+        <script th:src="@{/webjars/bootstrap/5.3.8/js/bootstrap.bundle.min.js}"></script>
+    </head>
+
+    <footer th:fragment="footer" class="p-2 mt-5 text-white" style="background-color:#003f66;">
+        <p class="lead text-center mb-0">[[#{plantilla.derechos}]] &COPY;</p>
+    </footer>
+
+    <section th:fragment="mostrarToast">
+        <div aria-live="polite" aria-atomic="true"
+             class="position-fixed top-50 start-50 translate-middle" style="z-index: 1080;">
+
+            <div th:if="${error}" class="toast show"
+                 role="alert"
+                 aria-live="assertive"
+                 aria-atomic="true"
+                 data-bs-autohide="true">
+
+                <div class="toast-header text-white bg-danger">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <strong class="me-auto ms-2">[[#{error}]]</strong>
+                </div>
+
+                <div class="toast-body">
+                    <p>[[${error}]]</p>
+                    <div class="mt-2 pt-2 border-top text-center">
+                        <button type="button" class="btn btn-secondary btn-sm"
+                                data-bs-dismiss="toast">[[#{accion.cerrar}]]</button>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${todoOk}" class="toast show"
+                 role="status"
+                 aria-live="polite"
+                 aria-atomic="true"
+                 data-bs-autohide="true">
+
+                <div class="toast-header text-white bg-success">
+                    <i class="fa-solid fa-square-check"></i>
+                    <strong class="me-auto ms-2">[[#{atencion}]]</strong>
+                </div>
+
+                <div class="toast-body">
+                    <p>[[${todoOk}]]</p>
+                    <div class="mt-2 pt-2 border-top text-center">
+                        <button type="button" class="btn btn-secondary btn-sm"
+                                data-bs-dismiss="toast">[[#{accion.cerrar}]]</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <head th:fragment="authHead(titulo)">
+        <title>[[${titulo}]] - [[#{aplicacion.titulo}]]</title>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+        <link th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}" rel="stylesheet"/>
+        <link th:href="@{/webjars/font-awesome/7.2.0/css/all.css}" rel="stylesheet"/>
+
+        <style>
+            :root {
+                --bookguest-blue: #003F63;
+                --bookguest-button: #1E6BD6;
+                --bookguest-text: #2F333A;
+                --bookguest-muted: #6B7280;
+                --bookguest-border: #D7DCE3;
+                --bookguest-danger: #FF2F2F;
+            }
+
+            html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                background-color: #FFFFFF;
+                font-family: Arial, Helvetica, sans-serif;
+                color: var(--bookguest-text);
+            }
+
+            .auth-layout {
+                min-height: 100vh;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .brand-section {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .brand-icon {
+                color: var(--bookguest-blue);
+                font-size: 64px;
+                line-height: 1;
+                margin-bottom: 10px;
+            }
+
+            .brand-title {
+                color: var(--bookguest-blue);
+                font-family: Georgia, 'Times New Roman', serif;
+                font-size: 48px;
+                font-weight: 700;
+                line-height: 1;
+                margin: 0;
+            }
+
+            .brand-subtitle {
+                color: var(--bookguest-blue);
+                font-size: 23px;
+                line-height: 1.2;
+                margin-top: 6px;
+                margin-bottom: 0;
+            }
+
+            .form-section {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .auth-card {
+                width: 360px;
+            }
+
+            .form-icon {
+                color: var(--bookguest-blue);
+                font-size: 42px;
+                line-height: 1;
+                margin-bottom: 18px;
+            }
+
+            .form-title {
+                font-size: 24px;
+                font-weight: 700;
+                line-height: 1.2;
+                margin-bottom: 8px;
+                color: #2E333B;
+            }
+
+            .form-subtitle {
+                font-size: 13px;
+                color: var(--bookguest-muted);
+                margin-bottom: 20px;
+            }
+
+            .form-label {
+                font-size: 12px;
+                color: #374151;
+                margin-bottom: 6px;
+            }
+
+            .form-control {
+                height: 33px;
+                border-radius: 7px;
+                border: 1px solid var(--bookguest-border);
+                font-size: 13px;
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            .form-control::placeholder {
+                color: #7B8496;
+            }
+
+            .helper-error {
+                font-size: 12px;
+                color: var(--bookguest-danger);
+                margin-top: 4px;
+                margin-bottom: 0;
+            }
+
+            .btn-auth {
+                width: 100%;
+                height: 37px;
+                margin-top: 14px;
+                background-color: var(--bookguest-button);
+                border: 1px solid var(--bookguest-button);
+                border-radius: 3px;
+                font-size: 14px;
+                font-weight: 500;
+                color: #FFFFFF;
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .btn-auth:hover {
+                color: #FFFFFF;
+                background-color: #195fc0;
+                border-color: #195fc0;
+            }
+
+            .auth-link-text {
+                margin-top: 18px;
+                font-size: 12px;
+                color: var(--bookguest-muted);
+                text-align: center;
+            }
+
+            .auth-link {
+                color: #0D6EFD;
+                text-decoration: none;
+                font-weight: 600;
+            }
+
+            .auth-link:hover {
+                text-decoration: underline;
+            }
+
+            .confirmation-layout {
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .confirmation-card {
+                width: 360px;
+                margin-top: -40px;
+            }
+
+            .confirmation-title {
+                font-size: 24px;
+                font-weight: 700;
+                line-height: 1.2;
+                margin-bottom: 20px;
+                color: #2E333B;
+            }
+
+            .confirmation-text {
+                font-size: 13px;
+                color: var(--bookguest-muted);
+                margin-bottom: 32px;
+                max-width: 330px;
+            }
+
+            @media (max-width: 768px) {
+                .auth-layout {
+                    grid-template-columns: 1fr;
+                }
+
+                .brand-section {
+                    padding-top: 48px;
+                    padding-bottom: 24px;
+                }
+
+                .form-section {
+                    padding-bottom: 48px;
+                }
+
+                .brand-icon {
+                    font-size: 52px;
+                }
+
+                .brand-title {
+                    font-size: 40px;
+                }
+
+                .brand-subtitle {
+                    font-size: 20px;
+                }
+
+                .auth-card,
+                .confirmation-card {
+                    width: 340px;
+                }
+            }
+        </style>
+    </head>
+
+    <section th:fragment="authBrand" class="brand-section">
+        <div>
+            <div class="brand-icon">
+                <i class="fa-solid fa-book-bookmark"></i>
+            </div>
+
+            <h1 class="brand-title">[[#{aplicacion.titulo}]]</h1>
+            <p class="brand-subtitle">[[#{aplicacion.subtitulo}]]</p>
+        </div>
+    </section>
+
+    <section th:fragment="authScripts">
+        <script th:src="@{/webjars/bootstrap/5.3.8/js/bootstrap.bundle.min.js}"></script>
+
+        <script th:inline="javascript">
+            document.addEventListener("DOMContentLoaded", function () {
+
+                const mensajes = {
+                    requerido: /*[[#{validacion.requerido}]]*/ "",
+                    email: /*[[#{validacion.email}]]*/ "",
+                    minimo: /*[[#{validacion.minimo}]]*/ "",
+                    passwordCoincide: /*[[#{validacion.password.coincide}]]*/ ""
+                };
+
+                const expresionEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                function limpiarMensaje(campo) {
+                    campo.setCustomValidity("");
+                }
+
+                function validarCampo(campo) {
+                    limpiarMensaje(campo);
+
+                    const valor = campo.value.trim();
+
+                    if (campo.dataset.required === "true" && valor.length === 0) {
+                        campo.setCustomValidity(campo.dataset.msgRequired || mensajes.requerido);
+                        return false;
+                    }
+
+                    if (campo.dataset.tipo === "email" && valor.length > 0 && !expresionEmail.test(valor)) {
+                        campo.setCustomValidity(campo.dataset.msgEmail || mensajes.email);
+                        return false;
+                    }
+
+                    if (campo.dataset.minimo) {
+                        const minimo = parseInt(campo.dataset.minimo, 10);
+
+                        if (valor.length > 0 && valor.length < minimo) {
+                            campo.setCustomValidity(campo.dataset.msgMinimo || mensajes.minimo);
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+
+                function validarConfirmacionPassword(formulario) {
+                    const password = formulario.querySelector("[data-password]");
+                    const confirmacion = formulario.querySelector("[data-password-confirmacion]");
+
+                    if (!password || !confirmacion) {
+                        return true;
+                    }
+
+                    limpiarMensaje(confirmacion);
+
+                    if (password.value.length > 0
+                            && confirmacion.value.length > 0
+                            && password.value !== confirmacion.value) {
+
+                        confirmacion.setCustomValidity(confirmacion.dataset.msgMatch || mensajes.passwordCoincide);
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                const formularios = document.querySelectorAll("form.bookguest-validated");
+
+                formularios.forEach(function (formulario) {
+
+                    formulario.setAttribute("novalidate", "novalidate");
+
+                    const campos = formulario.querySelectorAll("input, select, textarea");
+
+                    campos.forEach(function (campo) {
+                        campo.addEventListener("input", function () {
+                            validarCampo(campo);
+                            validarConfirmacionPassword(formulario);
+                        });
+
+                        campo.addEventListener("blur", function () {
+                            validarCampo(campo);
+                        });
+                    });
+
+                    formulario.addEventListener("submit", function (event) {
+                        let formularioValido = true;
+                        let primerCampoInvalido = null;
+
+                        campos.forEach(function (campo) {
+                            if (!validarCampo(campo)) {
+                                formularioValido = false;
+
+                                if (primerCampoInvalido === null) {
+                                    primerCampoInvalido = campo;
+                                }
+                            }
+                        });
+
+                        if (!validarConfirmacionPassword(formulario)) {
+                            formularioValido = false;
+
+                            if (primerCampoInvalido === null) {
+                                primerCampoInvalido = formulario.querySelector("[data-password-confirmacion]");
+                            }
+                        }
+
+                        if (!formularioValido) {
+                            event.preventDefault();
+
+                            if (primerCampoInvalido) {
+                                primerCampoInvalido.focus();
+                                primerCampoInvalido.reportValidity();
+                            }
+                        }
+                    });
+                });
+            });
+        </script>
+    </section>
+</html>

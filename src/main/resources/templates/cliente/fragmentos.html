@@ -1,4 +1,672 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
 
-<body>
-    <div>Sí entra</div>
-</body>
+    <head th:fragment="head(titulo)">
+        <title>[[${titulo}]] - [[#{aplicacion.titulo}]]</title>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+        <link th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}" rel="stylesheet"/>
+        <link th:href="@{/webjars/font-awesome/7.2.0/css/all.css}" rel="stylesheet"/>
+
+        <style>
+            :root {
+                --client-blue: #003F63;
+                --client-bg: #F1F2F4;
+                --client-text: #111827;
+                --client-muted: #6B7280;
+                --client-border: #DDE2EA;
+                --client-red: #E73535;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            html, body {
+                width: 100%;
+                min-height: 100%;
+                margin: 0;
+                background-color: var(--client-bg);
+                font-family: Arial, Helvetica, sans-serif;
+                color: var(--client-text);
+            }
+
+            img {
+                max-width: 100%;
+            }
+
+            .client-header {
+                min-height: 72px;
+                background-color: #FFFFFF;
+                border-bottom: 1px solid var(--client-border);
+                display: flex;
+                align-items: center;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+            }
+
+            .client-nav {
+                width: min(1180px, calc(100% - 48px));
+                margin: 0 auto;
+                display: flex;
+                align-items: center;
+                gap: clamp(14px, 2vw, 28px);
+            }
+
+            .client-brand {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                color: var(--client-blue);
+                font-weight: 700;
+                text-decoration: none;
+                font-size: 16px;
+                margin-right: clamp(8px, 2vw, 18px);
+                white-space: nowrap;
+            }
+
+            .client-brand:hover {
+                color: var(--client-blue);
+            }
+
+            .client-brand i {
+                font-size: 34px;
+            }
+
+            .client-menu {
+                display: flex;
+                align-items: center;
+                gap: clamp(18px, 2.5vw, 28px);
+                margin-right: auto;
+            }
+
+            .client-menu a {
+                color: #1F2937;
+                text-decoration: none;
+                font-size: 13px;
+                white-space: nowrap;
+            }
+
+            .client-menu a.active {
+                border-bottom: 2px solid #1F2937;
+                padding-bottom: 4px;
+                font-weight: 600;
+            }
+
+            .client-menu a:hover {
+                color: var(--client-blue);
+            }
+
+            .client-logout-form {
+                margin: 0;
+                padding: 0;
+                display: inline-flex;
+                align-items: center;
+            }
+
+            .client-logout-link {
+                border: 0;
+                background-color: transparent;
+                color: #1F2937;
+                text-decoration: none;
+                font-size: 13px;
+                white-space: nowrap;
+                padding: 0;
+                cursor: pointer;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+
+            .client-logout-link:hover {
+                color: var(--client-blue);
+            }
+
+            .client-language {
+                font-size: 13px;
+                color: #1F2937;
+                border: 0;
+                background: transparent;
+                outline: 0;
+                min-width: 82px;
+                cursor: pointer;
+            }
+
+            .client-search {
+                width: clamp(190px, 21vw, 250px);
+                height: 34px;
+                background-color: #F4F5F7;
+                border: 1px solid #EBEDF0;
+                border-radius: 2px;
+                display: flex;
+                align-items: center;
+                padding: 0 10px;
+                gap: 8px;
+                color: #8A93A3;
+                flex-shrink: 0;
+            }
+
+            .client-search input {
+                width: 100%;
+                border: 0;
+                outline: 0;
+                background-color: transparent;
+                font-size: 12px;
+                min-width: 0;
+            }
+
+            .client-search input::placeholder {
+                color: #9BA3AF;
+            }
+
+            .client-search button {
+                border: 0;
+                background-color: transparent;
+                color: #111827;
+                cursor: pointer;
+                padding: 0;
+            }
+
+            .client-search button:hover {
+                color: var(--client-blue);
+            }
+
+            .client-icons {
+                display: flex;
+                align-items: center;
+                gap: clamp(12px, 1.8vw, 18px);
+                color: #111827;
+                font-size: 18px;
+            }
+
+            .client-icons a {
+                color: #111827;
+                text-decoration: none;
+            }
+
+            .client-icons a:hover {
+                color: var(--client-blue);
+            }
+
+            .client-page {
+                width: min(1180px, calc(100% - 48px));
+                margin: 0 auto;
+                padding: clamp(24px, 3vw, 36px) 0 clamp(60px, 6vw, 90px) 0;
+            }
+
+            .section-marker {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                color: var(--client-blue);
+                font-size: 13px;
+                font-weight: 700;
+                margin-bottom: 18px;
+            }
+
+            .section-marker::before {
+                content: "";
+                width: 13px;
+                height: 32px;
+                background-color: #0D4F8B;
+                border-radius: 3px;
+                display: inline-block;
+            }
+
+            .section-title {
+                font-size: clamp(24px, 2.4vw, 32px);
+                font-weight: 700;
+                margin-bottom: clamp(28px, 4vw, 42px);
+            }
+
+            .book-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+                gap: clamp(28px, 4vw, 54px);
+                margin-bottom: 46px;
+            }
+
+            .book-card {
+                position: relative;
+                min-width: 0;
+            }
+
+            .book-cover-box {
+                width: 100%;
+                aspect-ratio: 1 / 1.18;
+                min-height: 205px;
+                background-color: #F7F8FA;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 16px;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .book-cover {
+                width: clamp(90px, 45%, 118px);
+                height: clamp(132px, 68%, 168px);
+                object-fit: cover;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14);
+                background-color: #E9EDF3;
+            }
+
+            .book-cover-placeholder {
+                width: clamp(90px, 45%, 118px);
+                height: clamp(132px, 68%, 168px);
+                background: linear-gradient(145deg, #E9EDF3, #D7DDE8);
+                color: #003F63;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                padding: 12px;
+                font-size: 13px;
+                font-weight: 700;
+                line-height: 1.2;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14);
+            }
+
+            .book-cover-placeholder.visible {
+                display: flex;
+            }
+
+            .book-actions {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                z-index: 2;
+            }
+
+            .book-action {
+                width: 24px;
+                height: 24px;
+                background-color: #FFFFFF;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 11px;
+                color: #111827;
+                border: 1px solid #EEF0F3;
+                text-decoration: none;
+            }
+
+            .book-action:hover {
+                color: var(--client-blue);
+            }
+
+            .book-discount {
+                position: absolute;
+                top: 0;
+                left: 0;
+                background-color: #0D4F8B;
+                color: #FFFFFF;
+                font-size: 11px;
+                padding: 4px 10px;
+                z-index: 2;
+            }
+
+            .book-add {
+                position: absolute;
+                left: 0;
+                bottom: 0;
+                width: 100%;
+                height: 36px;
+                background-color: #000000;
+                color: #FFFFFF;
+                border: 0;
+                font-size: 12px;
+                z-index: 2;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-decoration: none;
+            }
+
+            .book-add:hover {
+                color: #FFFFFF;
+            }
+
+            .book-title {
+                font-size: 13px;
+                font-weight: 600;
+                margin-bottom: 2px;
+                min-height: 32px;
+                color: #111827;
+                text-decoration: none;
+                display: block;
+            }
+
+            .book-title:hover {
+                color: var(--client-blue);
+            }
+
+            .book-author {
+                font-size: 12px;
+                color: #111827;
+                margin-bottom: 8px;
+            }
+
+            .book-price {
+                color: var(--client-red);
+                font-size: 13px;
+                font-weight: 600;
+                margin-right: 5px;
+            }
+
+            .book-old-price {
+                color: #9CA3AF;
+                text-decoration: line-through;
+                font-size: 12px;
+                margin-left: 5px;
+            }
+
+            .book-rating {
+                color: #F4A51C;
+                font-size: 12px;
+            }
+
+            .book-rating span {
+                color: #6B7280;
+                margin-left: 5px;
+            }
+
+            .category-row {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+                gap: clamp(14px, 2vw, 28px);
+                margin-bottom: 46px;
+            }
+
+            .category-btn {
+                height: 42px;
+                background-color: #F8F9FB;
+                border: 1px solid #BFC6D2;
+                border-radius: 2px;
+                font-size: 13px;
+                color: #111827;
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .category-btn.active {
+                background-color: #0D4F8B;
+                color: #FFFFFF;
+                border-color: #0D4F8B;
+            }
+
+            .category-btn:hover {
+                background-color: #0D4F8B;
+                color: #FFFFFF;
+                border-color: #0D4F8B;
+            }
+
+            .offers-section {
+                position: relative;
+            }
+
+            .offers-header {
+                display: flex;
+                align-items: flex-end;
+                justify-content: space-between;
+                gap: 24px;
+                margin-bottom: 28px;
+            }
+
+            .offers-header .section-title {
+                margin-bottom: 0;
+            }
+
+            .offer-timer {
+                display: flex;
+                align-items: flex-end;
+                gap: clamp(12px, 2vw, 18px);
+                margin-right: 104px;
+            }
+
+            .timer-item small {
+                display: block;
+                font-size: 10px;
+                color: #111827;
+                font-weight: 600;
+            }
+
+            .timer-item strong {
+                display: block;
+                font-size: clamp(18px, 2vw, 24px);
+                line-height: 1;
+            }
+
+            .offers-carousel {
+                position: relative;
+                padding-top: 8px;
+            }
+
+            .offers-carousel .carousel-control-prev,
+            .offers-carousel .carousel-control-next {
+                width: 38px;
+                height: 38px;
+                background-color: #FFFFFF;
+                border-radius: 50%;
+                opacity: 1;
+                border: 1px solid #E5E7EB;
+                top: -74px;
+            }
+
+            .offers-carousel .carousel-control-prev {
+                left: auto;
+                right: 52px;
+            }
+
+            .offers-carousel .carousel-control-next {
+                right: 0;
+            }
+
+            .offers-carousel .carousel-control-prev i,
+            .offers-carousel .carousel-control-next i {
+                color: #111827;
+            }
+
+            .client-footer {
+                min-height: 54px;
+                background-color: #000000;
+                color: #FFFFFF;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                text-align: center;
+            }
+
+            .table-responsive-auto {
+                width: 100%;
+                overflow-x: auto;
+            }
+
+            .form-size-auto {
+                width: min(100%, 520px);
+            }
+
+            .page-size-auto {
+                width: min(1180px, calc(100% - 48px));
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            @media (max-width: 992px) {
+                .client-nav {
+                    width: min(100% - 32px, 1180px);
+                    gap: 14px;
+                    flex-wrap: wrap;
+                    padding: 14px 0;
+                }
+
+                .client-menu {
+                    order: 3;
+                    width: 100%;
+                    flex-wrap: wrap;
+                    margin-right: 0;
+                }
+
+                .client-page {
+                    width: min(100% - 32px, 1180px);
+                }
+
+                .offers-header {
+                    align-items: flex-start;
+                    flex-direction: column;
+                }
+
+                .offer-timer {
+                    margin-right: 0;
+                    margin-bottom: 10px;
+                }
+
+                .offers-carousel .carousel-control-prev,
+                .offers-carousel .carousel-control-next {
+                    top: -54px;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .client-search {
+                    display: none;
+                }
+
+                .client-language {
+                    display: none;
+                }
+
+                .client-icons {
+                    gap: 12px;
+                }
+
+                .book-grid {
+                    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                }
+
+                .book-cover-box {
+                    min-height: 185px;
+                }
+
+                .offer-timer {
+                    display: none;
+                }
+
+                .offers-carousel .carousel-control-prev,
+                .offers-carousel .carousel-control-next {
+                    top: -48px;
+                }
+            }
+        </style>
+    </head>
+
+    <header th:fragment="header(activo)" class="client-header">
+        <nav class="client-nav">
+            <a th:href="@{/cliente/inicio}" class="client-brand">
+                <i class="fa-solid fa-book-bookmark"></i>
+                <span>[[#{aplicacion.titulo}]]</span>
+            </a>
+
+            <div class="client-menu">
+                <a th:href="@{/cliente/inicio}"
+                   th:classappend="${activo == 'inicio'} ? 'active'">
+                    [[#{cliente.nav.inicio}]]
+                </a>
+
+                <a th:href="@{/cliente/contactos}"
+                   th:classappend="${activo == 'contactos'} ? 'active'">
+                    [[#{cliente.nav.contactos}]]
+                </a>
+
+                <a th:href="@{/cliente/acerca}"
+                   th:classappend="${activo == 'acerca'} ? 'active'">
+                    [[#{cliente.nav.acerca}]]
+                </a>
+
+                <form th:action="@{/logout}" method="post" class="client-logout-form">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="client-logout-link">
+                        [[#{plantilla.cerrarSesion}]]
+                    </button>
+                </form>
+            </div>
+
+            <select class="client-language" onchange="cambiarIdiomaCliente(this.value)">
+                <option value="es">[[#{idioma.es}]]</option>
+                <option value="en">[[#{idioma.en}]]</option>
+            </select>
+
+            <form th:action="@{/cliente/libros}" method="get" class="client-search">
+                <input type="text"
+                       name="busqueda"
+                       th:placeholder="#{cliente.buscar.placeholder}"/>
+                <button type="submit" th:attr="aria-label=#{accion.buscar}">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </form>
+
+            <div class="client-icons">
+                <a th:href="@{/cliente/libros}" th:title="#{cliente.icono.favorito}">
+                    <i class="fa-regular fa-heart"></i>
+                </a>
+
+                <a th:href="@{/cliente/carrito}" th:title="#{plantilla.carrito}">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                </a>
+
+                <a th:href="@{/cliente/perfil}" th:title="#{plantilla.perfil}">
+                    <i class="fa-regular fa-user"></i>
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <footer th:fragment="footer" class="client-footer">
+        [[#{cliente.footer.derechos}]]
+    </footer>
+
+    <section th:fragment="scripts">
+        <script th:src="@{/webjars/bootstrap/5.3.8/js/bootstrap.bundle.min.js}"></script>
+
+        <script th:inline="javascript">
+            function cambiarIdiomaCliente(idioma) {
+                if (!idioma) {
+                    return;
+                }
+
+                const url = new URL(window.location.href);
+                url.searchParams.set("lang", idioma);
+                window.location.href = url.toString();
+            }
+
+            document.addEventListener("DOMContentLoaded", function () {
+                const imagenes = document.querySelectorAll(".book-cover");
+
+                imagenes.forEach(function (imagen) {
+                    imagen.addEventListener("error", function () {
+                        const contenedor = imagen.closest(".book-cover-box");
+                        const titulo = imagen.getAttribute("alt") || /*[[#{libro.titulo}]]*/ "";
+
+                        imagen.style.display = "none";
+
+                        if (contenedor && !contenedor.querySelector(".book-cover-placeholder")) {
+                            const placeholder = document.createElement("div");
+                            placeholder.classList.add("book-cover-placeholder", "visible");
+                            placeholder.textContent = titulo;
+                            contenedor.insertBefore(placeholder, contenedor.firstChild);
+                        }
+                    });
+                });
+            });
+        </script>
+    </section>
+</html>
