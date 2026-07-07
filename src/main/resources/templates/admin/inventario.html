@@ -1,3 +1,1142 @@
-<body>
-    <div>Sí entra</div>
-</body>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+    <head th:replace="~{admin/fragmentos :: head(#{admin.inventario.titulo})}"></head>
+
+    <body>
+        <main class="admin-layout">
+
+            <aside th:replace="~{admin/fragmentos :: sidebar('inventario')}"></aside>
+
+            <section class="admin-main">
+                <header th:replace="~{admin/fragmentos :: topbar}"></header>
+
+                <div class="admin-content">
+
+                    <style>
+                        .inventory-summary {
+                            display: grid;
+                            grid-template-columns: repeat(4, 1fr);
+                            gap: 0;
+                        }
+
+                        .inventory-summary-item {
+                            padding: 18px 20px;
+                            border-right: 1px solid #E2E6EC;
+                        }
+
+                        .inventory-summary-item:last-child {
+                            border-right: 0;
+                        }
+
+                        .inventory-summary-title {
+                            font-size: 13px;
+                            font-weight: 700;
+                            margin-bottom: 14px;
+                        }
+
+                        .inventory-blue {
+                            color: #0D6EFD;
+                        }
+
+                        .inventory-orange {
+                            color: #F59E0B;
+                        }
+
+                        .inventory-purple {
+                            color: #7C3AED;
+                        }
+
+                        .inventory-red {
+                            color: #EF4444;
+                        }
+
+                        .inventory-summary-line {
+                            display: flex;
+                            justify-content: space-between;
+                            gap: 12px;
+                            font-size: 14px;
+                            color: #344054;
+                            margin-bottom: 8px;
+                        }
+
+                        .inventory-summary-muted {
+                            display: flex;
+                            justify-content: space-between;
+                            gap: 12px;
+                            color: #98A2B3;
+                            font-size: 12px;
+                        }
+
+                        .inventory-card-header {
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            gap: 16px;
+                            margin-bottom: 18px;
+                        }
+
+                        .inventory-actions {
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            flex-wrap: wrap;
+                        }
+
+                        .inventory-btn-primary {
+                            background-color: #0D6EFD;
+                            color: #FFFFFF;
+                            border: 1px solid #0D6EFD;
+                            border-radius: 4px;
+                            min-height: 38px;
+                            padding: 9px 18px;
+                            font-size: 13px;
+                            text-decoration: none;
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 8px;
+                            cursor: pointer;
+                        }
+
+                        .inventory-btn-primary:hover {
+                            color: #FFFFFF;
+                            background-color: #0B5ED7;
+                            border-color: #0B5ED7;
+                        }
+
+                        .inventory-btn-secondary {
+                            background-color: #FFFFFF;
+                            color: #536072;
+                            border: 1px solid #D0D5DD;
+                            border-radius: 4px;
+                            min-height: 38px;
+                            padding: 9px 18px;
+                            font-size: 13px;
+                            text-decoration: none;
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 8px;
+                            cursor: pointer;
+                        }
+
+                        .inventory-btn-secondary:hover {
+                            color: #344054;
+                            background-color: #F9FAFB;
+                        }
+
+                        .inventory-btn-secondary.disabled {
+                            opacity: 0.45;
+                            pointer-events: none;
+                        }
+
+                        .inventory-table {
+                            font-size: 13px;
+                            margin-bottom: 0;
+                        }
+
+                        .inventory-table th {
+                            color: #667085;
+                            font-weight: 500;
+                            border-bottom: 1px solid #E2E6EC;
+                            padding: 13px 12px;
+                            white-space: nowrap;
+                        }
+
+                        .inventory-table td {
+                            color: #344054;
+                            border-bottom: 1px solid #E2E6EC;
+                            padding: 13px 12px;
+                            vertical-align: middle;
+                            white-space: nowrap;
+                        }
+
+                        .inventory-status-ok {
+                            color: #00A651;
+                            font-weight: 500;
+                        }
+
+                        .inventory-status-empty {
+                            color: #EF4444;
+                            font-weight: 500;
+                        }
+
+                        .inventory-status-low {
+                            color: #F59E0B;
+                            font-weight: 500;
+                        }
+
+                        .inventory-pagination {
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            padding-top: 14px;
+                        }
+
+                        .inventory-page-info {
+                            color: #667085;
+                            font-size: 13px;
+                        }
+
+                        .inventory-filter-box {
+                            background-color: #F9FAFB;
+                            border: 1px solid #E2E6EC;
+                            border-radius: 6px;
+                            padding: 14px;
+                            margin-bottom: 16px;
+                        }
+
+                        .inventory-modal-layer {
+                            position: fixed;
+                            inset: 0;
+                            z-index: 1200;
+                            background-color: rgba(15, 23, 42, 0.32);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            padding: 24px;
+                            overflow-y: auto;
+                        }
+
+                        .inventory-modal {
+                            width: min(100%, 560px);
+                            background-color: #FFFFFF;
+                            border-radius: 8px;
+                            padding: 28px 32px;
+                            box-shadow: 0 18px 50px rgba(15, 23, 42, 0.16);
+                            max-height: 95vh;
+                            overflow-y: auto;
+                        }
+
+                        .inventory-modal-title {
+                            font-size: 20px;
+                            font-weight: 600;
+                            margin-bottom: 22px;
+                        }
+
+                        .inventory-upload-row {
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            gap: 18px;
+                            margin-bottom: 24px;
+                        }
+
+                        .inventory-image-preview {
+                            width: 92px;
+                            height: 118px;
+                            border: 1px dashed #BFC6D2;
+                            border-radius: 8px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            overflow: hidden;
+                            background-color: #F9FAFB;
+                            color: #98A2B3;
+                            font-size: 12px;
+                            text-align: center;
+                            padding: 6px;
+                        }
+
+                        .inventory-image-preview img {
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                        }
+
+                        .inventory-image-link {
+                            color: #0D6EFD;
+                            font-size: 13px;
+                            cursor: pointer;
+                        }
+
+                        .inventory-hidden-file {
+                            display: none;
+                        }
+
+                        .inventory-form-row {
+                            display: grid;
+                            grid-template-columns: 140px 1fr;
+                            align-items: center;
+                            gap: 18px;
+                            margin-bottom: 16px;
+                        }
+
+                        .inventory-form-row label {
+                            font-size: 13px;
+                            color: #344054;
+                            margin: 0;
+                        }
+
+                        .inventory-form-row input,
+                        .inventory-form-row textarea,
+                        .inventory-form-row select {
+                            min-height: 38px;
+                            border: 1px solid #D0D5DD;
+                            border-radius: 6px;
+                            padding: 8px 12px;
+                            font-size: 13px;
+                            outline: 0;
+                            width: 100%;
+                        }
+
+                        .inventory-form-row textarea {
+                            min-height: 82px;
+                            resize: vertical;
+                        }
+
+                        .inventory-form-row input:focus,
+                        .inventory-form-row textarea:focus,
+                        .inventory-form-row select:focus {
+                            border-color: #0D6EFD;
+                            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.10);
+                        }
+
+                        .inventory-field-help {
+                            grid-column: 2 / 3;
+                            font-size: 12px;
+                            color: #667085;
+                            margin-top: -10px;
+                        }
+
+                        .inventory-modal-actions {
+                            display: flex;
+                            justify-content: flex-end;
+                            gap: 10px;
+                            margin-top: 24px;
+                        }
+
+                        .inventory-confirm-icon {
+                            color: #0D6EFD;
+                            font-size: 34px;
+                            margin-left: 36px;
+                        }
+
+                        .inventory-error {
+                            background-color: #FEF3F2;
+                            border: 1px solid #FDA29B;
+                            color: #B42318;
+                            border-radius: 6px;
+                            padding: 10px 12px;
+                            font-size: 13px;
+                            margin-bottom: 18px;
+                        }
+
+                        .inventory-client-error {
+                            display: none;
+                            background-color: #FEF3F2;
+                            border: 1px solid #FDA29B;
+                            color: #B42318;
+                            border-radius: 6px;
+                            padding: 10px 12px;
+                            font-size: 13px;
+                            margin-bottom: 18px;
+                        }
+
+                        .inventory-client-error.show {
+                            display: block;
+                        }
+
+                        .inventory-empty {
+                            color: #667085;
+                            font-size: 14px;
+                            text-align: center;
+                            padding: 28px;
+                        }
+
+                        @media (max-width: 992px) {
+                            .inventory-summary {
+                                grid-template-columns: repeat(2, 1fr);
+                            }
+
+                            .inventory-summary-item {
+                                border-bottom: 1px solid #E2E6EC;
+                            }
+
+                            .inventory-card-header {
+                                flex-direction: column;
+                                align-items: stretch;
+                            }
+                        }
+
+                        @media (max-width: 576px) {
+                            .inventory-summary {
+                                grid-template-columns: 1fr;
+                            }
+
+                            .inventory-form-row {
+                                grid-template-columns: 1fr;
+                                gap: 6px;
+                            }
+
+                            .inventory-field-help {
+                                grid-column: 1 / 2;
+                                margin-top: -4px;
+                            }
+
+                            .inventory-modal {
+                                padding: 22px 20px;
+                            }
+
+                            .inventory-modal-actions {
+                                flex-direction: column;
+                            }
+
+                            .inventory-btn-primary,
+                            .inventory-btn-secondary {
+                                width: 100%;
+                            }
+                        }
+                    </style>
+
+                    <section class="admin-card p-4 mb-4">
+                        <h2 class="admin-card-title">[[#{inventario.resumen}]]</h2>
+
+                        <div class="inventory-summary">
+                            <div class="inventory-summary-item">
+                                <div class="inventory-summary-title inventory-blue">[[#{inventario.categorias}]]</div>
+                                <div class="inventory-summary-line">
+                                    <span th:text="${totalCategorias}">0</span>
+                                </div>
+                                <div class="inventory-summary-muted">
+                                    <span>[[#{inventario.ultimos7}]]</span>
+                                </div>
+                            </div>
+
+                            <div class="inventory-summary-item">
+                                <div class="inventory-summary-title inventory-orange">[[#{inventario.totalProductos}]]</div>
+                                <div class="inventory-summary-line">
+                                    <span th:text="${totalProductos}">0</span>
+                                    <span>₡1.100.000</span>
+                                </div>
+                                <div class="inventory-summary-muted">
+                                    <span>[[#{inventario.ultimos7}]]</span>
+                                    <span>[[#{inventario.ganancias}]]</span>
+                                </div>
+                            </div>
+
+                            <div class="inventory-summary-item">
+                                <div class="inventory-summary-title inventory-purple">[[#{inventario.mejoresVentas}]]</div>
+                                <div class="inventory-summary-line">
+                                    <span>5</span>
+                                    <span>₡2500</span>
+                                </div>
+                                <div class="inventory-summary-muted">
+                                    <span>[[#{inventario.ultimos7}]]</span>
+                                    <span>[[#{inventario.total}]]</span>
+                                </div>
+                            </div>
+
+                            <div class="inventory-summary-item">
+                                <div class="inventory-summary-title inventory-red">[[#{inventario.alertas}]]</div>
+                                <div class="inventory-summary-line">
+                                    <span th:text="${totalPocasUnidades}">0</span>
+                                    <span th:text="${totalSinStock}">0</span>
+                                </div>
+                                <div class="inventory-summary-muted">
+                                    <span>[[#{inventario.pocasUnidades}]]</span>
+                                    <span>[[#{inventario.noDisponibles}]]</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="admin-card p-4">
+                        <div class="inventory-card-header">
+                            <h2 class="admin-card-title mb-0">[[#{inventario.libros}]]</h2>
+
+                            <div class="inventory-actions" th:if="${modo != 'seleccionar'}">
+                                <a th:href="@{/admin/inventario/nuevo}" class="inventory-btn-primary">
+                                    [[#{inventario.anadir}]]
+                                </a>
+
+                                <a th:href="@{/admin/inventario(page=${paginaLibros.number}, estado=${estado}, mostrarFiltros=${mostrarFiltros == true ? false : true})}" class="inventory-btn-secondary">
+                                    <i class="fa-solid fa-filter"></i>
+                                    [[#{inventario.filtros}]]
+                                </a>
+
+                                <a th:href="@{/admin/inventario/seleccionar(page=${paginaLibros.number}, estado=${estado})}" class="inventory-btn-secondary">
+                                    <i class="fa-solid fa-pencil"></i>
+                                    [[#{inventario.modificar}]]
+                                </a>
+                            </div>
+
+                            <div class="inventory-actions" th:if="${modo == 'seleccionar'}">
+                                <button type="button" class="inventory-btn-primary" onclick="modificarSeleccionado()">
+                                    [[#{inventario.modificar}]]
+                                </button>
+
+                                <a th:href="@{/admin/inventario}" class="inventory-btn-secondary">
+                                    <i class="fa-regular fa-circle-xmark"></i>
+                                    [[#{inventario.cancelar}]]
+                                </a>
+                            </div>
+                        </div>
+
+                        <div th:if="${mostrarFiltros}" class="inventory-filter-box">
+                            <form th:action="@{/admin/inventario}" method="get" class="row g-3 align-items-end">
+                                <div class="col-md-4">
+                                    <label class="form-label">[[#{inventario.disponibilidad}]]</label>
+                                    <select name="estado" class="form-select">
+                                        <option value="">[[#{inventario.todos}]]</option>
+                                        <option value="disponibles" th:selected="${estado == 'disponibles'}">[[#{inventario.filtro.disponibles}]]</option>
+                                        <option value="pocas" th:selected="${estado == 'pocas'}">[[#{inventario.filtro.pocas}]]</option>
+                                        <option value="sin_stock" th:selected="${estado == 'sin_stock'}">[[#{inventario.filtro.sinStock}]]</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <button type="submit" class="inventory-btn-primary">
+                                        [[#{inventario.aplicarFiltro}]]
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table inventory-table">
+                                <thead>
+                                    <tr>
+                                        <th th:if="${modo == 'seleccionar'}"></th>
+                                        <th>[[#{libro.titulo}]]</th>
+                                        <th>[[#{autor.nombre}]]</th>
+                                        <th>[[#{libro.precio}]]</th>
+                                        <th>[[#{editorial.nombre}]]</th>
+                                        <th>[[#{inventario.isbn}]]</th>
+                                        <th>[[#{libro.categoria}]]</th>
+                                        <th>[[#{inventario.existencias}]]</th>
+                                        <th>[[#{inventario.disponibilidad}]]</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <tr th:each="libro : ${paginaLibros.content}">
+                                        <td th:if="${modo == 'seleccionar'}">
+                                            <input type="checkbox"
+                                                   name="idLibroSeleccionado"
+                                                   th:value="${libro.idLibro}"
+                                                   onchange="seleccionarUnico(this)"/>
+                                        </td>
+
+                                        <td th:text="${libro.titulo}"></td>
+                                        <td th:text="${libro.autor != null ? libro.autor.nombre : ''}"></td>
+                                        <td>₡<span th:text="${#numbers.formatDecimal(libro.precio, 1, 'COMMA', 0, 'POINT')}">0</span></td>
+                                        <td th:text="${libro.editorial != null ? libro.editorial.nombre : ''}"></td>
+                                        <td th:text="${libro.isbn}"></td>
+                                        <td th:text="${libro.categoria != null ? libro.categoria.descripcion : ''}"></td>
+                                        <td th:text="${libro.existencias}">0</td>
+
+                                        <td>
+                                            <span th:if="${libro.existencias > 5}" class="inventory-status-ok">
+                                                [[#{inventario.disponible}]]
+                                            </span>
+
+                                            <span th:if="${libro.existencias > 0 and libro.existencias <= 5}" class="inventory-status-low">
+                                                [[#{inventario.pocasUnidades}]]
+                                            </span>
+
+                                            <span th:if="${libro.existencias == 0}" class="inventory-status-empty">
+                                                [[#{inventario.sinStock}]]
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <div th:if="${paginaLibros.content == null or paginaLibros.content.empty}" class="inventory-empty">
+                                [[#{inventario.sinRegistros}]]
+                            </div>
+                        </div>
+
+                        <div class="inventory-pagination">
+                            <a class="inventory-btn-secondary"
+                               th:classappend="${paginaLibros.first} ? ' disabled'"
+                               th:href="@{/admin/inventario(page=${paginaLibros.number - 1}, estado=${estado})}">
+                                [[#{inventario.anterior}]]
+                            </a>
+
+                            <span class="inventory-page-info">
+                                [[#{inventario.pagina}]]
+                                <span th:text="${paginaLibros.number + 1}">1</span>
+                                [[#{inventario.de}]]
+                                <span th:text="${paginaLibros.totalPages == 0 ? 1 : paginaLibros.totalPages}">1</span>
+                            </span>
+
+                            <a class="inventory-btn-secondary"
+                               th:classappend="${paginaLibros.last} ? ' disabled'"
+                               th:href="@{/admin/inventario(page=${paginaLibros.number + 1}, estado=${estado})}">
+                                [[#{inventario.siguiente}]]
+                            </a>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+        </main>
+
+        <section th:if="${modo == 'nuevo'}" class="inventory-modal-layer">
+            <form th:action="@{/admin/inventario/guardar}"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="inventory-modal bookguest-inventory-form"
+                  data-requiere-imagen="true"
+                  novalidate="novalidate">
+
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <h2 class="inventory-modal-title">[[#{inventario.nuevo}]]</h2>
+
+                <div th:if="${mensajeError}" class="inventory-error" th:text="${mensajeError}">
+                </div>
+
+                <div class="inventory-client-error" data-form-error></div>
+
+                <div class="inventory-upload-row">
+                    <div class="inventory-image-preview" id="previewNuevo">[[#{inventario.sinImagen}]]</div>
+
+                    <label for="imagenFileNuevo" class="inventory-image-link">
+                        [[#{inventario.seleccioneImagen}]] *
+                    </label>
+
+                    <input type="file"
+                           id="imagenFileNuevo"
+                           name="imagenFile"
+                           class="inventory-hidden-file"
+                           accept="image/*"
+                           data-file-required="true"
+                           th:attr="data-label=#{libro.imagen}"
+                           onchange="mostrarPreview(this, 'previewNuevo')"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{libro.titulo}]] *</label>
+                    <input type="text"
+                           name="titulo"
+                           th:placeholder="#{inventario.placeholder.titulo}"
+                           maxlength="150"
+                           data-required="true"
+                           th:attr="data-label=#{libro.titulo}"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{autor.nombre}]] *</label>
+                    <input type="text"
+                           name="autor"
+                           th:placeholder="#{inventario.placeholder.autor}"
+                           maxlength="120"
+                           data-required="true"
+                           th:attr="data-label=#{autor.nombre}"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{libro.descripcion}]] *</label>
+                    <textarea name="descripcion"
+                              th:placeholder="#{inventario.placeholder.descripcion}"
+                              maxlength="1000"
+                              data-required="true"
+                              th:attr="data-label=#{libro.descripcion}"></textarea>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{libro.precio}]] *</label>
+                    <input type="number"
+                           name="precio"
+                           th:placeholder="#{inventario.placeholder.precio}"
+                           min="1"
+                           step="1"
+                           data-required="true"
+                           data-number-positive="true"
+                           th:attr="data-label=#{libro.precio}"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{editorial.nombre}]] *</label>
+                    <input type="text"
+                           name="editorial"
+                           th:placeholder="#{inventario.placeholder.editorial}"
+                           maxlength="120"
+                           data-required="true"
+                           th:attr="data-label=#{editorial.nombre}"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{inventario.isbn}]] *</label>
+                    <input type="text"
+                           name="isbn"
+                           th:placeholder="#{inventario.placeholder.isbn}"
+                           minlength="13"
+                           maxlength="20"
+                           data-required="true"
+                           data-isbn="true"
+                           th:attr="data-label=#{inventario.isbn}"/>
+                </div>
+                <div class="inventory-field-help">
+                    [[#{inventario.isbn.ayuda}]]
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{inventario.ubicacion}]] *</label>
+                    <input type="text"
+                           name="ubicacionFisica"
+                           th:placeholder="#{inventario.placeholder.ubicacion}"
+                           maxlength="150"
+                           data-required="true"
+                           th:attr="data-label=#{inventario.ubicacion}"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{libro.categoria}]] *</label>
+                    <input type="text"
+                           name="categoria"
+                           th:placeholder="#{inventario.placeholder.categoria}"
+                           maxlength="120"
+                           data-required="true"
+                           th:attr="data-label=#{libro.categoria}"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{inventario.stockDisponible}]] *</label>
+                    <input type="number"
+                           name="existencias"
+                           min="0"
+                           step="1"
+                           value="1"
+                           data-required="true"
+                           data-integer-nonnegative="true"
+                           th:attr="data-label=#{inventario.stockDisponible}"/>
+                </div>
+
+                <div class="inventory-modal-actions">
+                    <a th:href="@{/admin/inventario}" class="inventory-btn-secondary">
+                        [[#{accion.regresar}]]
+                    </a>
+                    <button type="submit" class="inventory-btn-primary">
+                        [[#{inventario.anadir}]]
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <section th:if="${modo == 'modificar' and libroSeleccionado != null}" class="inventory-modal-layer">
+            <form th:action="@{/admin/inventario/actualizar}"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="inventory-modal bookguest-inventory-form"
+                  novalidate="novalidate">
+
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="idLibro" th:value="${libroSeleccionado.idLibro}"/>
+
+                <h2 class="inventory-modal-title">[[#{inventario.modificar}]]</h2>
+
+                <div th:if="${mensajeError}" class="inventory-error" th:text="${mensajeError}">
+                </div>
+
+                <div class="inventory-client-error" data-form-error></div>
+
+                <div class="inventory-upload-row">
+                    <div class="inventory-image-preview" id="previewModificar">
+                        <img th:if="${libroSeleccionado.rutaImagen != null and !libroSeleccionado.rutaImagen.isBlank()}"
+                             th:src="${libroSeleccionado.rutaImagen}"
+                             th:alt="${libroSeleccionado.titulo}"/>
+                        <span th:if="${libroSeleccionado.rutaImagen == null or libroSeleccionado.rutaImagen.isBlank()}">
+                            [[#{inventario.sinImagen}]]
+                        </span>
+                    </div>
+
+                    <label for="imagenFileModificar" class="inventory-image-link">
+                        [[#{inventario.cambiarImagen}]]
+                    </label>
+
+                    <input type="file"
+                           id="imagenFileModificar"
+                           name="imagenFile"
+                           class="inventory-hidden-file"
+                           accept="image/*"
+                           onchange="mostrarPreview(this, 'previewModificar')"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{libro.titulo}]] *</label>
+                    <input type="text"
+                           name="titulo"
+                           maxlength="150"
+                           th:value="${libroSeleccionado.titulo}"
+                           data-required="true"
+                           th:attr="data-label=#{libro.titulo}"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{autor.nombre}]] *</label>
+                    <input type="text"
+                           name="autor"
+                           maxlength="120"
+                           th:value="${libroSeleccionado.autor != null ? libroSeleccionado.autor.nombre : ''}"
+                           data-required="true"
+                           th:attr="data-label=#{autor.nombre}"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{libro.descripcion}]] *</label>
+                    <textarea name="descripcion"
+                              maxlength="1000"
+                              data-required="true"
+                              th:attr="data-label=#{libro.descripcion}"
+                              th:text="${libroSeleccionado.descripcion}"></textarea>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{libro.precio}]] *</label>
+                    <input type="number"
+                           name="precio"
+                           min="1"
+                           step="1"
+                           th:value="${libroSeleccionado.precio}"
+                           data-required="true"
+                           data-number-positive="true"
+                           th:attr="data-label=#{libro.precio}"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{editorial.nombre}]] *</label>
+                    <input type="text"
+                           name="editorial"
+                           maxlength="120"
+                           th:value="${libroSeleccionado.editorial != null ? libroSeleccionado.editorial.nombre : ''}"
+                           data-required="true"
+                           th:attr="data-label=#{editorial.nombre}"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{inventario.isbn}]] *</label>
+                    <input type="text"
+                           name="isbn"
+                           minlength="13"
+                           maxlength="20"
+                           th:value="${libroSeleccionado.isbn}"
+                           data-required="true"
+                           data-isbn="true"
+                           th:attr="data-label=#{inventario.isbn}"/>
+                </div>
+                <div class="inventory-field-help">
+                    [[#{inventario.isbn.ayuda}]]
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{inventario.ubicacion}]] *</label>
+                    <input type="text"
+                           name="ubicacionFisica"
+                           maxlength="150"
+                           th:value="${libroSeleccionado.ubicacionFisica}"
+                           data-required="true"
+                           th:attr="data-label=#{inventario.ubicacion}"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{libro.categoria}]] *</label>
+                    <input type="text"
+                           name="categoria"
+                           maxlength="120"
+                           th:value="${libroSeleccionado.categoria != null ? libroSeleccionado.categoria.descripcion : ''}"
+                           data-required="true"
+                           th:attr="data-label=#{libro.categoria}"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{inventario.stockDisponible}]] *</label>
+                    <input type="number"
+                           name="existencias"
+                           min="0"
+                           step="1"
+                           th:value="${libroSeleccionado.existencias}"
+                           data-required="true"
+                           data-integer-nonnegative="true"
+                           th:attr="data-label=#{inventario.stockDisponible}"/>
+                </div>
+
+                <div class="inventory-modal-actions">
+                    <a th:href="@{/admin/inventario/seleccionar}" class="inventory-btn-secondary">
+                        [[#{inventario.cancelar}]]
+                    </a>
+                    <button type="submit" class="inventory-btn-primary">
+                        [[#{inventario.confirmarCambios}]]
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <section th:if="${(modo == 'confirmacionAgregar' or modo == 'confirmacionModificar') and libroSeleccionado != null}" class="inventory-modal-layer">
+            <div class="inventory-modal">
+                <h2 class="inventory-modal-title"
+                    th:text="${modo == 'confirmacionAgregar'} ? #{inventario.productoAnadido} : #{inventario.productoModificado}">
+                    [[#{accion.confirmar}]]
+                </h2>
+
+                <div class="inventory-upload-row">
+                    <div class="inventory-image-preview">
+                        <img th:if="${libroSeleccionado.rutaImagen != null and !libroSeleccionado.rutaImagen.isBlank()}"
+                             th:src="${libroSeleccionado.rutaImagen}"
+                             th:alt="${libroSeleccionado.titulo}"/>
+                        <span th:if="${libroSeleccionado.rutaImagen == null or libroSeleccionado.rutaImagen.isBlank()}">
+                            [[#{inventario.sinImagen}]]
+                        </span>
+                    </div>
+
+                    <i class="fa-solid fa-check inventory-confirm-icon"></i>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{libro.titulo}]]</label>
+                    <input type="text" th:value="${libroSeleccionado.titulo}" readonly="readonly"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{autor.nombre}]]</label>
+                    <input type="text" th:value="${libroSeleccionado.autor != null ? libroSeleccionado.autor.nombre : ''}" readonly="readonly"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{libro.descripcion}]]</label>
+                    <textarea readonly="readonly" th:text="${libroSeleccionado.descripcion}"></textarea>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{libro.precio}]]</label>
+                    <input type="text" th:value="|₡${#numbers.formatDecimal(libroSeleccionado.precio, 1, 'COMMA', 0, 'POINT')}|" readonly="readonly"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{editorial.nombre}]]</label>
+                    <input type="text" th:value="${libroSeleccionado.editorial != null ? libroSeleccionado.editorial.nombre : ''}" readonly="readonly"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{inventario.isbn}]]</label>
+                    <input type="text" th:value="${libroSeleccionado.isbn}" readonly="readonly"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{inventario.ubicacion}]]</label>
+                    <input type="text" th:value="${libroSeleccionado.ubicacionFisica}" readonly="readonly"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{libro.categoria}]]</label>
+                    <input type="text" th:value="${libroSeleccionado.categoria != null ? libroSeleccionado.categoria.descripcion : ''}" readonly="readonly"/>
+                </div>
+
+                <div class="inventory-form-row">
+                    <label>[[#{inventario.stockDisponible}]]</label>
+                    <input type="text" th:value="${libroSeleccionado.existencias}" readonly="readonly"/>
+                </div>
+
+                <div class="inventory-modal-actions">
+                    <a th:href="@{/admin/inventario}" class="inventory-btn-primary">
+                        [[#{accion.regresar}]]
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section th:replace="~{admin/fragmentos :: scripts}"></section>
+
+        <script th:inline="javascript">
+            const mensajesInventario = {
+                debeSeleccionar: /*[[#{inventario.js.debeSeleccionarProducto}]]*/ "",
+                archivoNoValido: /*[[#{inventario.js.archivoNoValido}]]*/ "",
+                campo: /*[[#{inventario.js.campo}]]*/ "",
+                imagen: /*[[#{libro.imagen}]]*/ "",
+                campoNumerico: /*[[#{inventario.js.campoNumerico}]]*/ "",
+                obligatorio: /*[[#{inventario.js.obligatorio}]]*/ "",
+                archivoImagen: /*[[#{inventario.js.archivoImagen}]]*/ "",
+                mayorCero: /*[[#{inventario.js.mayorCero}]]*/ "",
+                enteroNoNegativo: /*[[#{inventario.js.enteroNoNegativo}]]*/ "",
+                isbnInvalido: /*[[#{inventario.js.isbnInvalido}]]*/ ""
+            };
+
+            function seleccionarUnico(elemento) {
+                const checks = document.querySelectorAll("input[name='idLibroSeleccionado']");
+
+                checks.forEach(function (check) {
+                    if (check !== elemento) {
+                        check.checked = false;
+                    }
+                });
+            }
+
+            function modificarSeleccionado() {
+                const seleccionado = document.querySelector("input[name='idLibroSeleccionado']:checked");
+
+                if (seleccionado) {
+                    const url = /*[[@{/admin/inventario/modificar}]]*/ "/admin/inventario/modificar";
+                    window.location.href = url + "?idLibro=" + seleccionado.value;
+                } else {
+                    alert(mensajesInventario.debeSeleccionar);
+                }
+            }
+
+            function mostrarPreview(input, idPreview) {
+                const preview = document.getElementById(idPreview);
+
+                if (!preview || !input.files || !input.files[0]) {
+                    return;
+                }
+
+                const archivo = input.files[0];
+
+                if (!archivo.type.startsWith("image/")) {
+                    input.value = "";
+                    preview.textContent = mensajesInventario.archivoNoValido;
+                    return;
+                }
+
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    preview.innerHTML = "";
+                    const imagen = document.createElement("img");
+                    imagen.src = e.target.result;
+                    preview.appendChild(imagen);
+                };
+
+                reader.readAsDataURL(archivo);
+            }
+
+            document.addEventListener("DOMContentLoaded", function () {
+                const formularios = document.querySelectorAll(".bookguest-inventory-form");
+
+                formularios.forEach(function (formulario) {
+                    formulario.addEventListener("submit", function (event) {
+                        const mensaje = validarFormularioInventario(formulario);
+
+                        if (mensaje !== null) {
+                            event.preventDefault();
+                            mostrarErrorFormulario(formulario, mensaje);
+                        }
+                    });
+
+                    const campos = formulario.querySelectorAll("input, textarea, select");
+
+                    campos.forEach(function (campo) {
+                        campo.addEventListener("input", function () {
+                            limpiarErrorFormulario(formulario);
+                        });
+
+                        campo.addEventListener("change", function () {
+                            limpiarErrorFormulario(formulario);
+                        });
+                    });
+                });
+            });
+
+            function validarFormularioInventario(formulario) {
+                const camposRequeridos = formulario.querySelectorAll("[data-required='true']");
+
+                for (const campo of camposRequeridos) {
+                    const valor = campo.value.trim();
+                    const etiqueta = campo.dataset.label || mensajesInventario.campo;
+
+                    if (valor.length === 0) {
+                        campo.focus();
+                        return mensajesInventario.obligatorio.replace("{0}", etiqueta);
+                    }
+                }
+
+                const imagenRequerida = formulario.querySelector("[data-file-required='true']");
+
+                if (imagenRequerida) {
+                    const etiqueta = imagenRequerida.dataset.label || mensajesInventario.imagen;
+
+                    if (!imagenRequerida.files || imagenRequerida.files.length === 0) {
+                        return mensajesInventario.obligatorio.replace("{0}", etiqueta);
+                    }
+
+                    if (!imagenRequerida.files[0].type.startsWith("image/")) {
+                        return mensajesInventario.archivoImagen;
+                    }
+                }
+
+                const camposNumericosPositivos = formulario.querySelectorAll("[data-number-positive='true']");
+
+                for (const campo of camposNumericosPositivos) {
+                    const valor = Number(campo.value);
+                    const etiqueta = campo.dataset.label || mensajesInventario.campoNumerico;
+
+                    if (Number.isNaN(valor) || valor <= 0) {
+                        campo.focus();
+                        return mensajesInventario.mayorCero.replace("{0}", etiqueta);
+                    }
+                }
+
+                const camposEnterosNoNegativos = formulario.querySelectorAll("[data-integer-nonnegative='true']");
+
+                for (const campo of camposEnterosNoNegativos) {
+                    const valor = Number(campo.value);
+                    const etiqueta = campo.dataset.label || mensajesInventario.campoNumerico;
+
+                    if (!Number.isInteger(valor) || valor < 0) {
+                        campo.focus();
+                        return mensajesInventario.enteroNoNegativo.replace("{0}", etiqueta);
+                    }
+                }
+
+                const camposIsbn = formulario.querySelectorAll("[data-isbn='true']");
+
+                for (const campo of camposIsbn) {
+                    const isbn = normalizarIsbn(campo.value);
+
+                    if (!validarIsbn13(isbn)) {
+                        campo.focus();
+                        return mensajesInventario.isbnInvalido;
+                    }
+                }
+
+                return null;
+            }
+
+            function normalizarIsbn(valor) {
+                return valor.replaceAll("-", "").replaceAll(" ", "").trim();
+            }
+
+            function validarIsbn13(isbn) {
+                if (!/^97[89][0-9]{10}$/.test(isbn)) {
+                    return false;
+                }
+
+                let suma = 0;
+
+                for (let i = 0; i < 12; i++) {
+                    const digito = Number(isbn.charAt(i));
+                    suma += (i % 2 === 0) ? digito : digito * 3;
+                }
+
+                const digitoControl = (10 - (suma % 10)) % 10;
+                const ultimoDigito = Number(isbn.charAt(12));
+
+                return digitoControl === ultimoDigito;
+            }
+
+            function mostrarErrorFormulario(formulario, mensaje) {
+                const contenedor = formulario.querySelector("[data-form-error]");
+
+                if (contenedor) {
+                    contenedor.textContent = mensaje;
+                    contenedor.classList.add("show");
+                } else {
+                    alert(mensaje);
+                }
+            }
+
+            function limpiarErrorFormulario(formulario) {
+                const contenedor = formulario.querySelector("[data-form-error]");
+
+                if (contenedor) {
+                    contenedor.textContent = "";
+                    contenedor.classList.remove("show");
+                }
+            }
+        </script>
+    </body>
+</html>
