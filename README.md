@@ -188,7 +188,6 @@ El script de base de datos incluye usuarios iniciales para pruebas.
 
 ```text
 Correo: admin@bookguest.com
-Contraseña: Admin123.
 Rol: ROLE_ADMIN
 ```
 
@@ -196,7 +195,6 @@ Rol: ROLE_ADMIN
 
 ```text
 Correo: cliente@bookguest.com
-Contraseña: Cliente123.
 Rol: ROLE_CLIENTE
 ```
 
