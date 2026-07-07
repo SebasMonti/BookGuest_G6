@@ -1,3 +1,453 @@
-<body>
-    <div>Sí entra</div>
-</body>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+    <head th:replace="~{cliente/fragmentos :: head(#{cliente.inicio.titulo})}"></head>
+
+    <body>
+
+        <header th:replace="~{cliente/fragmentos :: header('inicio')}"></header>
+
+        <main class="client-page">
+
+            <style>
+                .inicio-section {
+                    margin-bottom: 50px;
+                }
+
+                .inicio-product-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                    gap: 58px 48px;
+                }
+
+                .inicio-offer-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                    gap: 48px;
+                }
+
+                .inicio-book-link {
+                    text-decoration: none;
+                    color: inherit;
+                }
+
+                .inicio-book-link:hover {
+                    color: inherit;
+                }
+
+                .book-cover-box {
+                    height: 230px;
+                    min-height: 230px;
+                    aspect-ratio: auto;
+                }
+
+                .book-cover {
+                    width: 112px;
+                    height: 160px;
+                    max-width: 112px;
+                    max-height: 160px;
+                    object-fit: cover;
+                }
+
+                .book-title {
+                    display: block;
+                    color: #111827;
+                    text-decoration: none;
+                }
+
+                .book-title:hover {
+                    color: #003F63;
+                }
+
+                .book-add {
+                    opacity: 0;
+                    visibility: hidden;
+                    transition: opacity 0.18s ease-in-out;
+                }
+
+                .book-card:hover .book-add,
+                .book-cover-box:hover .book-add {
+                    opacity: 1;
+                    visibility: visible;
+                }
+
+                .inicio-category-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 20px;
+                }
+
+                .inicio-category-arrows {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    margin-bottom: clamp(28px, 4vw, 42px);
+                }
+
+                .inicio-arrow {
+                    width: 34px;
+                    height: 34px;
+                    border-radius: 50%;
+                    border: 1px solid transparent;
+                    background-color: #FFFFFF;
+                    color: #111827;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    text-decoration: none;
+                }
+
+                .inicio-arrow:hover {
+                    border-color: #DDE2EA;
+                    color: #003F63;
+                }
+
+                .inicio-empty {
+                    background-color: #FFFFFF;
+                    border: 1px solid #E5E7EB;
+                    padding: 28px;
+                    color: #6B7280;
+                    text-align: center;
+                    font-size: 14px;
+                }
+
+                .inicio-top-carousel {
+                    margin-bottom: 58px;
+                }
+
+                .inicio-top-carousel .offers-header {
+                    margin-bottom: 28px;
+                }
+
+                .inicio-top-carousel .carousel-item {
+                    min-height: 330px;
+                }
+
+                .inicio-top-carousel .carousel-control-prev,
+                .inicio-top-carousel .carousel-control-next {
+                    top: -74px;
+                }
+
+                @media (max-width: 992px) {
+                    .inicio-product-grid,
+                    .inicio-offer-grid {
+                        grid-template-columns: repeat(2, minmax(0, 1fr));
+                    }
+                }
+
+                @media (max-width: 576px) {
+                    .inicio-product-grid,
+                    .inicio-offer-grid {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .inicio-category-header {
+                        align-items: flex-start;
+                        flex-direction: column;
+                    }
+                }
+            </style>
+
+            <section class="offers-section inicio-section inicio-top-carousel">
+                <div class="section-marker">
+                    [[#{cliente.ofertas.etiqueta}]]
+                </div>
+
+                <div class="offers-header">
+                    <h2 class="section-title">
+                        [[#{cliente.ofertas.titulo}]]
+                    </h2>
+
+                    <div class="offer-timer">
+                        <div class="timer-item">
+                            <small>[[#{cliente.tiempo.dias}]]</small>
+                            <strong>03</strong>
+                        </div>
+
+                        <strong>:</strong>
+
+                        <div class="timer-item">
+                            <small>[[#{cliente.tiempo.horas}]]</small>
+                            <strong>23</strong>
+                        </div>
+
+                        <strong>:</strong>
+
+                        <div class="timer-item">
+                            <small>[[#{cliente.tiempo.minutos}]]</small>
+                            <strong>19</strong>
+                        </div>
+
+                        <strong>:</strong>
+
+                        <div class="timer-item">
+                            <small>[[#{cliente.tiempo.segundos}]]</small>
+                            <strong>56</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${ofertas != null and !ofertas.empty}"
+                     id="ofertasInicioCarousel"
+                     class="carousel slide offers-carousel"
+                     data-bs-ride="carousel">
+
+                    <div class="carousel-inner">
+
+                        <div th:each="indiceSlide : ${#numbers.sequence(0, ofertas.size() - 1, 4)}"
+                             class="carousel-item"
+                             th:classappend="${indiceSlide == 0} ? ' active'">
+
+                            <div class="book-grid inicio-offer-grid">
+
+                                <article th:each="libro, iteracion : ${ofertas.subList(indiceSlide, T(java.lang.Math).min(indiceSlide + 4, ofertas.size()))}"
+                                         class="book-card">
+
+                                    <div class="book-cover-box">
+
+                                        <span class="book-discount"
+                                              th:text="${iteracion.index == 0 ? '-40%' : (iteracion.index == 1 ? '-35%' : (iteracion.index == 2 ? '-30%' : '-25%'))}">
+                                            -25%
+                                        </span>
+
+                                        <div class="book-actions">
+                                            <a th:href="@{/cliente/libro/{idLibro}(idLibro=${libro.idLibro})}"
+                                               class="book-action"
+                                               th:title="#{cliente.icono.favorito}">
+                                                <i class="fa-regular fa-heart"></i>
+                                            </a>
+
+                                            <a th:href="@{/cliente/libro/{idLibro}(idLibro=${libro.idLibro})}"
+                                               class="book-action"
+                                               th:title="#{cliente.icono.verDetalle}">
+                                                <i class="fa-regular fa-eye"></i>
+                                            </a>
+                                        </div>
+
+                                        <a th:href="@{/cliente/libro/{idLibro}(idLibro=${libro.idLibro})}"
+                                           class="inicio-book-link">
+
+                                            <img th:if="${libro.rutaImagen != null and !libro.rutaImagen.isBlank()}"
+                                                 th:src="${libro.rutaImagen}"
+                                                 th:alt="${libro.titulo}"
+                                                 class="book-cover"/>
+
+                                            <div th:if="${libro.rutaImagen == null or libro.rutaImagen.isBlank()}"
+                                                 class="book-cover-placeholder visible">
+                                                <span th:text="${libro.titulo}"></span>
+                                            </div>
+                                        </a>
+
+                                        <a th:href="@{/cliente/libro/{idLibro}(idLibro=${libro.idLibro})}"
+                                           class="book-add">
+                                            [[#{cliente.carrito.anadir}]]
+                                        </a>
+                                    </div>
+
+                                    <a th:href="@{/cliente/libro/{idLibro}(idLibro=${libro.idLibro})}"
+                                       class="book-title"
+                                       th:text="${libro.titulo}"></a>
+
+                                    <div class="book-author"
+                                         th:text="${libro.autor != null ? libro.autor.nombre : #messages.msg('cliente.libro.sinAutor')}"></div>
+
+                                    <div>
+                                        <span class="book-price">
+                                            ₡<span th:text="${#numbers.formatDecimal(libro.precio, 1, 'COMMA', 0, 'POINT')}">0</span>
+                                        </span>
+
+                                        <span class="book-old-price">
+                                            ₡<span th:text="${#numbers.formatDecimal(libro.precio.multiply(T(java.math.BigDecimal).valueOf(1.25)), 1, 'COMMA', 0, 'POINT')}">0</span>
+                                        </span>
+                                    </div>
+
+                                    <div class="book-rating">
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star-half-stroke"></i>
+                                        <span>
+                                            (<span th:text="${libro.idLibro + 70}">75</span>)
+                                        </span>
+                                    </div>
+                                </article>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="carousel-control-prev"
+                            type="button"
+                            data-bs-target="#ofertasInicioCarousel"
+                            data-bs-slide="prev">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+
+                    <button class="carousel-control-next"
+                            type="button"
+                            data-bs-target="#ofertasInicioCarousel"
+                            data-bs-slide="next">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <div th:if="${ofertas == null or ofertas.empty}" class="inicio-empty">
+                    [[#{cliente.ofertas.vacias}]]
+                </div>
+            </section>
+
+            <section class="inicio-section">
+                <div class="section-marker">
+                    [[#{cliente.productos.etiqueta}]]
+                </div>
+
+                <h1 class="section-title">
+                    [[#{cliente.productos.titulo}]]
+                </h1>
+
+                <div th:if="${libros != null and !libros.empty}" class="book-grid inicio-product-grid">
+
+                    <article th:each="libro : ${libros}" class="book-card">
+
+                        <div class="book-cover-box">
+
+                            <div class="book-actions">
+                                <a th:href="@{/cliente/libro/{idLibro}(idLibro=${libro.idLibro})}"
+                                   class="book-action"
+                                   th:title="#{cliente.icono.favorito}">
+                                    <i class="fa-regular fa-heart"></i>
+                                </a>
+
+                                <a th:href="@{/cliente/libro/{idLibro}(idLibro=${libro.idLibro})}"
+                                   class="book-action"
+                                   th:title="#{cliente.icono.verDetalle}">
+                                    <i class="fa-regular fa-eye"></i>
+                                </a>
+                            </div>
+
+                            <a th:href="@{/cliente/libro/{idLibro}(idLibro=${libro.idLibro})}"
+                               class="inicio-book-link">
+
+                                <img th:if="${libro.rutaImagen != null and !libro.rutaImagen.isBlank()}"
+                                     th:src="${libro.rutaImagen}"
+                                     th:alt="${libro.titulo}"
+                                     class="book-cover"/>
+
+                                <div th:if="${libro.rutaImagen == null or libro.rutaImagen.isBlank()}"
+                                     class="book-cover-placeholder visible">
+                                    <span th:text="${libro.titulo}"></span>
+                                </div>
+                            </a>
+
+                            <a th:href="@{/cliente/libro/{idLibro}(idLibro=${libro.idLibro})}"
+                               class="book-add">
+                                [[#{cliente.carrito.anadir}]]
+                            </a>
+                        </div>
+
+                        <a th:href="@{/cliente/libro/{idLibro}(idLibro=${libro.idLibro})}"
+                           class="book-title"
+                           th:text="${libro.titulo}"></a>
+
+                        <div class="book-author"
+                             th:text="${libro.autor != null ? libro.autor.nombre : #messages.msg('cliente.libro.sinAutor')}"></div>
+
+                        <div>
+                            <span class="book-price">
+                                ₡<span th:text="${#numbers.formatDecimal(libro.precio, 1, 'COMMA', 0, 'POINT')}">0</span>
+                            </span>
+
+                            <span class="book-rating">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star-half-stroke"></i>
+                                <span>
+                                    (<span th:text="${libro.idLibro + 30}">35</span>)
+                                </span>
+                            </span>
+                        </div>
+                    </article>
+                </div>
+
+                <div th:if="${libros == null or libros.empty}" class="inicio-empty">
+                    [[#{cliente.productos.vacios}]]
+                </div>
+            </section>
+
+            <section class="inicio-section">
+                <div class="section-marker">
+                    [[#{cliente.categorias.etiqueta}]]
+                </div>
+
+                <div class="inicio-category-header">
+                    <h2 class="section-title">
+                        [[#{cliente.categorias.titulo}]]
+                    </h2>
+
+                    <div class="inicio-category-arrows">
+                        <a th:href="@{/cliente/libros}" class="inicio-arrow">
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </a>
+
+                        <a th:href="@{/cliente/libros}" class="inicio-arrow">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="category-row">
+
+                    <a th:each="categoria, iteracion : ${categorias}"
+                       th:href="@{/cliente/libros(busqueda=${categoria.descripcion})}"
+                       class="category-btn"
+                       th:classappend="${iteracion.index == 3} ? ' active'"
+                       th:text="${categoria.descripcion}">
+
+                    </a>
+
+                    <a th:if="${categorias == null or categorias.empty}"
+                       th:href="@{/cliente/libros(busqueda=${#messages.msg('cliente.categoria.romance')})}"
+                       class="category-btn">
+                        [[#{cliente.categoria.romance}]]
+                    </a>
+
+                    <a th:if="${categorias == null or categorias.empty}"
+                       th:href="@{/cliente/libros(busqueda=${#messages.msg('cliente.categoria.misterio')})}"
+                       class="category-btn">
+                        [[#{cliente.categoria.misterio}]]
+                    </a>
+
+                    <a th:if="${categorias == null or categorias.empty}"
+                       th:href="@{/cliente/libros(busqueda=${#messages.msg('cliente.categoria.ciencia')})}"
+                       class="category-btn">
+                        [[#{cliente.categoria.ciencia}]]
+                    </a>
+
+                    <a th:if="${categorias == null or categorias.empty}"
+                       th:href="@{/cliente/libros(busqueda=${#messages.msg('cliente.categoria.infantiles')})}"
+                       class="category-btn active">
+                        [[#{cliente.categoria.infantiles}]]
+                    </a>
+
+                    <a th:if="${categorias == null or categorias.empty}"
+                       th:href="@{/cliente/libros(busqueda=${#messages.msg('cliente.categoria.noficcion')})}"
+                       class="category-btn">
+                        [[#{cliente.categoria.noficcion}]]
+                    </a>
+
+                    <a th:if="${categorias == null or categorias.empty}"
+                       th:href="@{/cliente/libros}"
+                       class="category-btn">
+                        [[#{cliente.categoria.vendidos}]]
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <footer th:replace="~{cliente/fragmentos :: footer}"></footer>
+
+        <section th:replace="~{cliente/fragmentos :: scripts}"></section>
+    </body>
+</html>
