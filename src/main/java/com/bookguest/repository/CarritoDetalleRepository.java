@@ -1,13 +1,18 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
- */
 package com.bookguest.repository;
 
-/**
- *
- * @author Danny
- */
-public interface CarritoDetalleRepository {
-    
+import com.bookguest.domain.Carrito;
+import com.bookguest.domain.CarritoDetalle;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CarritoDetalleRepository extends JpaRepository<CarritoDetalle, Long> {
+
+    @EntityGraph(attributePaths = {"libro", "libro.autor", "libro.categoria", "libro.editorial"})
+    List<CarritoDetalle> findByCarritoOrderByIdCarritoDetalleAsc(Carrito carrito);
+
+    Optional<CarritoDetalle> findByCarritoAndLibroIdLibro(Carrito carrito, Long idLibro);
+
+    void deleteByCarritoAndLibroIdLibro(Carrito carrito, Long idLibro);
 }
