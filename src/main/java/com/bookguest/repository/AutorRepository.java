@@ -1,13 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
- */
 package com.bookguest.repository;
 
-/**
- *
- * @author Danny
- */
-public interface AutorRepository {
-    
+import com.bookguest.domain.Autor;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AutorRepository extends JpaRepository<Autor, Long> {
+
+    Optional<Autor> findByNombreIgnoreCase(String nombre);
 }

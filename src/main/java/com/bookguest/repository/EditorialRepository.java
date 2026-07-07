@@ -1,13 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
- */
 package com.bookguest.repository;
 
-/**
- *
- * @author Danny
- */
-public interface EditorialRepository {
-    
+import com.bookguest.domain.Editorial;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface EditorialRepository extends JpaRepository<Editorial, Long> {
+
+    Optional<Editorial> findByNombreIgnoreCase(String nombre);
 }

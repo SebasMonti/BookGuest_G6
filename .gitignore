@@ -33,3 +33,9 @@ build/
 .vscode/
 
 src/main/resources/firebase/*.json
+
+src/main/resources/firebase/
+src/main/resources/firebase.json
+src/main/resources/firebase*.json
+firebase-service-account.json
+serviceAccountKey.json

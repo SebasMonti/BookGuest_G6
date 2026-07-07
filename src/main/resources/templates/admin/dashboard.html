@@ -1,3 +1,450 @@
-<body>
-    <div>Sí entra</div>
-</body>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+    <head th:replace="~{admin/fragmentos :: head(#{admin.dashboard.titulo})}"></head>
+
+    <body>
+        <main class="admin-layout">
+
+            <aside th:replace="~{admin/fragmentos :: sidebar('dashboard')}"></aside>
+
+            <section class="admin-main">
+                <header th:replace="~{admin/fragmentos :: topbar}"></header>
+
+                <div class="admin-content">
+
+                    <style>
+                        .dashboard-grid {
+                            display: grid;
+                            grid-template-columns: repeat(4, 1fr);
+                            gap: 18px;
+                            margin-bottom: 22px;
+                        }
+
+                        .dashboard-stat-card {
+                            background-color: #FFFFFF;
+                            border-radius: 8px;
+                            padding: 20px;
+                            border: 1px solid #EEF0F4;
+                            min-height: 126px;
+                        }
+
+                        .dashboard-stat-header {
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            margin-bottom: 18px;
+                        }
+
+                        .dashboard-stat-title {
+                            font-size: 13px;
+                            color: #667085;
+                            margin: 0;
+                        }
+
+                        .dashboard-stat-icon {
+                            width: 34px;
+                            height: 34px;
+                            border-radius: 8px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            background-color: #F2F4F7;
+                            color: #0D6EFD;
+                        }
+
+                        .dashboard-stat-value {
+                            font-size: 26px;
+                            font-weight: 700;
+                            color: #1D2939;
+                            margin-bottom: 6px;
+                        }
+
+                        .dashboard-stat-muted {
+                            font-size: 12px;
+                            color: #98A2B3;
+                        }
+
+                        .dashboard-section-grid {
+                            display: grid;
+                            grid-template-columns: 1.4fr 1fr;
+                            gap: 18px;
+                            margin-bottom: 22px;
+                        }
+
+                        .dashboard-card {
+                            background-color: #FFFFFF;
+                            border-radius: 8px;
+                            border: 1px solid #EEF0F4;
+                            padding: 20px;
+                        }
+
+                        .dashboard-card-header {
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            gap: 12px;
+                            margin-bottom: 18px;
+                        }
+
+                        .dashboard-card-title {
+                            font-size: 18px;
+                            font-weight: 600;
+                            color: #1D2939;
+                            margin: 0;
+                        }
+
+                        .dashboard-link {
+                            font-size: 13px;
+                            color: #0D6EFD;
+                            text-decoration: none;
+                        }
+
+                        .dashboard-link:hover {
+                            text-decoration: underline;
+                        }
+
+                        .dashboard-table {
+                            width: 100%;
+                            font-size: 13px;
+                            margin: 0;
+                        }
+
+                        .dashboard-table th {
+                            color: #667085;
+                            font-weight: 500;
+                            padding: 12px 10px;
+                            border-bottom: 1px solid #E2E6EC;
+                            white-space: nowrap;
+                        }
+
+                        .dashboard-table td {
+                            color: #344054;
+                            padding: 12px 10px;
+                            border-bottom: 1px solid #E2E6EC;
+                            vertical-align: middle;
+                            white-space: nowrap;
+                        }
+
+                        .dashboard-book-cell {
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                        }
+
+                        .dashboard-book-image {
+                            width: 34px;
+                            height: 46px;
+                            border-radius: 4px;
+                            object-fit: cover;
+                            background-color: #F2F4F7;
+                            border: 1px solid #E2E6EC;
+                        }
+
+                        .dashboard-book-placeholder {
+                            width: 34px;
+                            height: 46px;
+                            border-radius: 4px;
+                            background-color: #F2F4F7;
+                            color: #98A2B3;
+                            border: 1px solid #E2E6EC;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 12px;
+                        }
+
+                        .dashboard-status-ok {
+                            color: #00A651;
+                            font-weight: 500;
+                        }
+
+                        .dashboard-status-low {
+                            color: #F59E0B;
+                            font-weight: 500;
+                        }
+
+                        .dashboard-status-empty {
+                            color: #EF4444;
+                            font-weight: 500;
+                        }
+
+                        .dashboard-alert-list {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 12px;
+                        }
+
+                        .dashboard-alert-item {
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            gap: 14px;
+                            border: 1px solid #EEF0F4;
+                            border-radius: 8px;
+                            padding: 12px;
+                        }
+
+                        .dashboard-alert-title {
+                            font-size: 13px;
+                            font-weight: 600;
+                            color: #344054;
+                            margin-bottom: 4px;
+                        }
+
+                        .dashboard-alert-subtitle {
+                            font-size: 12px;
+                            color: #98A2B3;
+                        }
+
+                        .dashboard-empty {
+                            color: #667085;
+                            font-size: 14px;
+                            padding: 20px 0;
+                            text-align: center;
+                        }
+
+                        .dashboard-bottom-grid {
+                            display: grid;
+                            grid-template-columns: repeat(2, 1fr);
+                            gap: 18px;
+                        }
+
+                        @media (max-width: 1200px) {
+                            .dashboard-grid {
+                                grid-template-columns: repeat(2, 1fr);
+                            }
+
+                            .dashboard-section-grid,
+                            .dashboard-bottom-grid {
+                                grid-template-columns: 1fr;
+                            }
+                        }
+
+                        @media (max-width: 576px) {
+                            .dashboard-grid {
+                                grid-template-columns: 1fr;
+                            }
+                        }
+                    </style>
+
+                    <section class="mb-4">
+                        <h1 class="h4 mb-1">[[#{admin.dashboard.titulo}]]</h1>
+                    </section>
+
+                    <section class="dashboard-grid">
+
+                        <article class="dashboard-stat-card">
+                            <div class="dashboard-stat-header">
+                                <p class="dashboard-stat-title">[[#{admin.dashboard.librosActivos}]]</p>
+                                <div class="dashboard-stat-icon">
+                                    <i class="fa-solid fa-book"></i>
+                                </div>
+                            </div>
+                            <div class="dashboard-stat-value" th:text="${totalProductos}">0</div>
+                            <div class="dashboard-stat-muted">[[#{admin.dashboard.productosRegistradosInventario}]]</div>
+                        </article>
+
+                        <article class="dashboard-stat-card">
+                            <div class="dashboard-stat-header">
+                                <p class="dashboard-stat-title">[[#{categoria.total}]]</p>
+                                <div class="dashboard-stat-icon">
+                                    <i class="fa-solid fa-layer-group"></i>
+                                </div>
+                            </div>
+                            <div class="dashboard-stat-value" th:text="${totalCategorias}">0</div>
+                            <div class="dashboard-stat-muted">[[#{admin.dashboard.categoriasRegistradas}]]</div>
+                        </article>
+
+                        <article class="dashboard-stat-card">
+                            <div class="dashboard-stat-header">
+                                <p class="dashboard-stat-title">[[#{admin.dashboard.stockTotal}]]</p>
+                                <div class="dashboard-stat-icon">
+                                    <i class="fa-solid fa-boxes-stacked"></i>
+                                </div>
+                            </div>
+                            <div class="dashboard-stat-value" th:text="${totalExistencias}">0</div>
+                            <div class="dashboard-stat-muted">[[#{admin.dashboard.copiasDisponiblesVenta}]]</div>
+                        </article>
+
+                        <article class="dashboard-stat-card">
+                            <div class="dashboard-stat-header">
+                                <p class="dashboard-stat-title">[[#{admin.dashboard.valorInventario}]]</p>
+                                <div class="dashboard-stat-icon">
+                                    <i class="fa-solid fa-coins"></i>
+                                </div>
+                            </div>
+                            <div class="dashboard-stat-value">
+                                ₡<span th:text="${#numbers.formatDecimal(valorInventario, 1, 'COMMA', 0, 'POINT')}">0</span>
+                            </div>
+                            <div class="dashboard-stat-muted">[[#{admin.dashboard.precioPorExistenciasDisponibles}]]</div>
+                        </article>
+
+                    </section>
+
+                    <section class="dashboard-section-grid">
+
+                        <article class="dashboard-card">
+                            <div class="dashboard-card-header">
+                                <h2 class="dashboard-card-title">[[#{admin.dashboard.ultimosLibrosAgregados}]]</h2>
+                                <a th:href="@{/admin/inventario}" class="dashboard-link">[[#{admin.dashboard.verInventario}]]</a>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="dashboard-table">
+                                    <thead>
+                                        <tr>
+                                            <th>[[#{admin.tabla.libro}]]</th>
+                                            <th>[[#{autor.nombre}]]</th>
+                                            <th>[[#{admin.tabla.precio}]]</th>
+                                            <th>[[#{admin.dashboard.stock}]]</th>
+                                            <th>[[#{pedido.estado}]]</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        <tr th:each="libro : ${ultimosLibros}">
+                                            <td>
+                                                <div class="dashboard-book-cell">
+                                                    <img th:if="${libro.rutaImagen != null and !libro.rutaImagen.isBlank()}"
+                                                         th:src="${libro.rutaImagen}"
+                                                         th:alt="${libro.titulo}"
+                                                         class="dashboard-book-image"/>
+                                                    <div th:if="${libro.rutaImagen == null or libro.rutaImagen.isBlank()}"
+                                                         class="dashboard-book-placeholder">
+                                                        <i class="fa-solid fa-book"></i>
+                                                    </div>
+                                                    <span th:text="${libro.titulo}"></span>
+                                                </div>
+                                            </td>
+
+                                            <td th:text="${libro.autor != null ? libro.autor.nombre : #messages.msg('cliente.libro.sinAutor')}"></td>
+
+                                            <td>
+                                                ₡<span th:text="${#numbers.formatDecimal(libro.precio, 1, 'COMMA', 0, 'POINT')}">0</span>
+                                            </td>
+
+                                            <td th:text="${libro.existencias}">0</td>
+
+                                            <td>
+                                                <span th:if="${libro.existencias > 5}" class="dashboard-status-ok">
+                                                    [[#{inventario.disponible}]]
+                                                </span>
+                                                <span th:if="${libro.existencias > 0 and libro.existencias <= 5}" class="dashboard-status-low">
+                                                    [[#{inventario.pocasUnidades}]]
+                                                </span>
+                                                <span th:if="${libro.existencias == 0}" class="dashboard-status-empty">
+                                                    [[#{inventario.sinStock}]]
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <div th:if="${ultimosLibros == null or ultimosLibros.empty}" class="dashboard-empty">
+                                    [[#{admin.dashboard.sinLibrosRegistrados}]]
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="dashboard-card">
+                            <div class="dashboard-card-header">
+                                <h2 class="dashboard-card-title">[[#{inventario.alertas}]]</h2>
+                                <a th:href="@{/admin/inventario(estado='pocas')}" class="dashboard-link">[[#{admin.dashboard.revisar}]]</a>
+                            </div>
+
+                            <div class="dashboard-alert-list">
+
+                                <div class="dashboard-alert-item">
+                                    <div>
+                                        <div class="dashboard-alert-title">[[#{inventario.pocasUnidades}]]</div>
+                                        <div class="dashboard-alert-subtitle">[[#{admin.dashboard.stockEntreUnoYCinco}]]</div>
+                                    </div>
+                                    <strong class="dashboard-status-low" th:text="${totalPocasUnidades}">0</strong>
+                                </div>
+
+                                <div class="dashboard-alert-item">
+                                    <div>
+                                        <div class="dashboard-alert-title">[[#{inventario.noDisponibles}]]</div>
+                                        <div class="dashboard-alert-subtitle">[[#{admin.dashboard.librosSinExistencias}]]</div>
+                                    </div>
+                                    <strong class="dashboard-status-empty" th:text="${totalSinStock}">0</strong>
+                                </div>
+
+                            </div>
+                        </article>
+
+                    </section>
+
+                    <section class="dashboard-bottom-grid">
+
+                        <article class="dashboard-card">
+                            <div class="dashboard-card-header">
+                                <h2 class="dashboard-card-title">[[#{admin.dashboard.librosPocasUnidades}]]</h2>
+                                <a th:href="@{/admin/inventario(estado='pocas')}" class="dashboard-link">[[#{admin.dashboard.verTodos}]]</a>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="dashboard-table">
+                                    <thead>
+                                        <tr>
+                                            <th>[[#{libro.titulo}]]</th>
+                                            <th>[[#{libro.categoria}]]</th>
+                                            <th>[[#{admin.dashboard.stock}]]</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="libro : ${librosBajoStock}">
+                                            <td th:text="${libro.titulo}"></td>
+                                            <td th:text="${libro.categoria != null ? libro.categoria.descripcion : #messages.msg('cliente.libro.sinCategoria')}"></td>
+                                            <td class="dashboard-status-low" th:text="${libro.existencias}">0</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <div th:if="${librosBajoStock == null or librosBajoStock.empty}" class="dashboard-empty">
+                                    [[#{admin.dashboard.sinLibrosPocasUnidades}]]
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="dashboard-card">
+                            <div class="dashboard-card-header">
+                                <h2 class="dashboard-card-title">[[#{admin.dashboard.librosNoDisponibles}]]</h2>
+                                <a th:href="@{/admin/inventario(estado='sin_stock')}" class="dashboard-link">[[#{admin.dashboard.verTodos}]]</a>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="dashboard-table">
+                                    <thead>
+                                        <tr>
+                                            <th>[[#{libro.titulo}]]</th>
+                                            <th>[[#{libro.categoria}]]</th>
+                                            <th>[[#{admin.dashboard.stock}]]</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="libro : ${librosSinStock}">
+                                            <td th:text="${libro.titulo}"></td>
+                                            <td th:text="${libro.categoria != null ? libro.categoria.descripcion : #messages.msg('cliente.libro.sinCategoria')}"></td>
+                                            <td class="dashboard-status-empty" th:text="${libro.existencias}">0</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <div th:if="${librosSinStock == null or librosSinStock.empty}" class="dashboard-empty">
+                                    [[#{admin.dashboard.sinLibrosSinStock}]]
+                                </div>
+                            </div>
+                        </article>
+
+                    </section>
+
+                </div>
+            </section>
+        </main>
+
+        <section th:replace="~{admin/fragmentos :: scripts}"></section>
+    </body>
+</html>
