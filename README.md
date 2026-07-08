@@ -1,409 +1,443 @@
-# BookGuest
+# 📚 BookGuest - 
 
-BookGuest es una aplicación web desarrollada con Spring Boot para la venta y administración de libros. El sistema permite manejar usuarios, roles, catálogo de libros, carrito de compras, pedidos, inventario, ofertas y carga de imágenes mediante Firebase Storage.
+## 🎯 Descripción del Proyecto
 
-## 👥 Participantes
+**BookGuest** es una aplicación web desarrollada con **Spring Boot** que funciona como una plataforma completa de e-commerce para la venta y administración de libros. El sistema implementa un modelo de negocio con dos roles principales: administrador y cliente, con funcionalidades completas de catálogo, carrito de compras, gestión de pedidos e integración con Firebase Storage para la carga de imágenes.
 
-Este proyecto fue desarrollado por:
+Este proyecto fue desarrollado como trabajo final del curso de **Desarrollo Web** por el **Grupo 6**.
 
-* **Sebastián Montiel** - Estudiante
-* **María Fernanda Hernández Moya** - Estudiante
-* **Danny Antonio Fonseca García** - Estudiante
-* **Nahum Esteban Ramírez Fuentes** - Estudiante
+---
 
-## Descripción del proyecto
+## 👥 Equipo de Desarrollo
 
-El proyecto está orientado a una librería en línea, donde existen dos perfiles principales:
+- **Sebastián Montiel** - Desarrollador
+- **María Fernanda Hernández Moya** - Desarrolladora
+- **Danny Antonio Fonseca García** - Desarrollador
+- **Nahum Esteban Ramírez Fuentes** - Desarrollador
 
-* Administrador: gestiona inventario, productos, usuarios, pedidos y configuración general.
-* Cliente: puede registrarse, iniciar sesión, consultar libros, ver ofertas, administrar su carrito y revisar sus pedidos.
+---
 
-La aplicación utiliza una arquitectura por capas, separando controladores, servicios, repositorios y entidades de dominio.
+## 🛠️ Tecnologías Utilizadas
 
-## Tecnologías utilizadas
+| Tecnología | Versión | Propósito |
+| --- | --- | --- |
+| **Java** | 21 | Lenguaje de programación |
+| **Spring Boot** | 4.1.0 | Framework web |
+| **Spring Security** | 4.1.0 | Autenticación y autorización |
+| **Spring Data JPA** | 4.1.0 | Acceso a datos |
+| **Thymeleaf** | 4.1.0 | Motor de plantillas |
+| **MySQL** | Latest | Base de datos |
+| **Bootstrap** | 5.3.8 | Framework CSS |
+| **jQuery** | 4.0.0 | Librería JavaScript |
+| **Font Awesome** | 7.2.0 | Iconos |
+| **Firebase Admin SDK** | 9.9.0 | Gestión de almacenamiento en la nube |
+| **Lombok** | Latest | Reducción de código boilerplate |
+| **Maven** | Latest | Gestor de dependencias |
 
-* Java 21
-* Spring Boot 4.1.0
-* Spring MVC
-* Spring Data JPA
-* Spring Security
-* Thymeleaf
-* MySQL
-* Maven
-* Bootstrap 5.3.8
-* Font Awesome
-* jQuery
-* Firebase Admin SDK
-* Firebase Storage
-* Lombok
+---
 
-## Funcionalidades principales
+## 🚀 Características Principales
 
-### Módulo público
+### 📱 Módulo Público
+- ✅ Página de inicio atractiva
+- ✅ Autenticación (login/logout)
+- ✅ Registro de nuevos clientes
+- ✅ Recuperación y restablecimiento de contraseña
+- ✅ Manejo personalizado de errores
 
-* Página de inicio.
-* Inicio de sesión.
-* Registro de clientes.
-* Recuperación o restablecimiento de acceso.
-* Manejo de errores personalizados.
+### 👤 Módulo Cliente
+- 📖 Exploración completa del catálogo de libros
+- 🔍 Búsqueda y filtrado avanzado
+- 📄 Visualización detallada de cada libro
+- 🎁 Acceso a ofertas y promociones
+- 🛒 Gestión integral del carrito de compras
+- 📦 Visualización y seguimiento de pedidos
+- 👤 Gestión del perfil de usuario
 
-### Módulo de cliente
+### 🔐 Módulo Administrador
+- 📊 Dashboard administrativo con estadísticas
+- 📚 Gestión completa de libros (CRUD)
+- 👥 Administración de usuarios
+- 📋 Gestión de pedidos
+- 🏪 Gestión de inventario
+- 🎁 Administración de ofertas
+- ⚙️ Configuración general del sistema
+- 👨‍🏫 Gestión de autores, categorías y editoriales
 
-* Página de inicio para clientes.
-* Consulta de libros disponibles.
-* Búsqueda de libros.
-* Visualización del detalle de cada libro.
-* Consulta de ofertas.
-* Administración del carrito de compras.
-* Actualización de cantidades en el carrito.
-* Eliminación de productos del carrito.
-* Consulta de pedidos.
-* Consulta de perfil.
+### 🔒 Seguridad
+- 🔐 Autenticación con Spring Security
+- 📧 Login mediante correo y contraseña
+- 👮 Control de acceso basado en roles (RBAC)
+- 🛡️ Protección de rutas según permisos
+- ↩️ Redirección automática según rol del usuario
 
-### Módulo de administrador
+### 🌍 Internacionalización
+- 🇪🇸 Soporte para español
+- 🇺🇸 Soporte para inglés
+- 🇲🇽 Configuración regional
 
-* Dashboard administrativo.
-* Gestión de inventario.
-* Registro de nuevos libros.
-* Modificación de libros existentes.
-* Administración de usuarios.
-* Administración de pedidos.
-* Administración de productos.
-* Configuración general.
+---
 
-### Seguridad
+## 📁 Estructura del Proyecto
 
-* Autenticación mediante Spring Security.
-* Inicio de sesión usando correo electrónico y contraseña.
-* Control de acceso por roles.
-* Rutas protegidas para administradores.
-* Rutas protegidas para clientes.
-* Redirección automática según el rol del usuario.
-
-### Internacionalización
-
-El proyecto utiliza archivos de mensajes para manejar textos visibles en la aplicación:
-
-* `messages.properties`
-* `messages_es.properties`
-* `messages_en.properties`
-
-Esto permite separar los textos de las vistas y facilitar la traducción o mantenimiento del sistema.
-
-## Estructura general del proyecto
-
-```text
-BookGuest/
+```javascript
+BookGuest_G6/
 ├── src/
 │   └── main/
-│       ├── java/
-│       │   └── com/bookguest/
-│       │       ├── controller/
-│       │       ├── domain/
-│       │       ├── repository/
-│       │       ├── service/
-│       │       ├── BookguestApplication.java
-│       │       ├── ProjectConfig.java
-│       │       └── StorageConfig.java
+│       ├── java/com/bookguest/
+│       │   ├── controller/          # Controladores MVC
+│       │   │   ├── AdminController.java
+│       │   │   ├── ClienteController.java
+│       │   │   ├── LoginController.java
+│       │   │   └── ...
+│       │   ├── service/             # Lógica de negocio
+│       │   │   ├── LibroService.java
+│       │   │   ├── UsuarioService.java
+│       │   │   ├── CarritoService.java
+│       │   │   └── ...
+│       │   ├── repository/          # Acceso a datos (Spring Data JPA)
+│       │   │   ├── LibroRepository.java
+│       │   │   ├── UsuarioRepository.java
+│       │   │   └── ...
+│       │   ├── domain/              # Entidades JPA
+│       │   │   ├── Usuario.java
+│       │   │   ├── Libro.java
+│       │   │   ├── Pedido.java
+│       │   │   └── ...
+│       │   ├── BookguestApplication.java    # Clase principal
+│       │   ├── ProjectConfig.java           # Configuración
+│       │   └── StorageConfig.java           # Config de Firebase
 │       └── resources/
-│           ├── templates/
-│           │   ├── admin/
-│           │   ├── cliente/
-│           │   └── general/
-│           ├── firebase/
+│           ├── templates/           # Vistas Thymeleaf
+│           │   ├── admin/           # Plantillas administrativas
+│           │   ├── cliente/         # Plantillas de cliente
+│           │   └── general/         # Plantillas públicas
+│           ├── firebase/            # Credenciales Firebase
 │           ├── application.properties
-│           ├── creaTablas.sql
+│           ├── creaTablas.sql       # Script de inicialización BD
 │           ├── messages.properties
 │           ├── messages_es.properties
 │           └── messages_en.properties
-├── pom.xml
+├── pom.xml                          # Dependencias Maven
 └── README.md
 ```
 
-## Requisitos previos
+---
 
-Antes de ejecutar el proyecto, se debe tener instalado:
+## ⚙️ Requisitos Previos
 
-* Java JDK 21 o superior.
-* Maven.
-* MySQL Server.
-* NetBeans, IntelliJ IDEA, Eclipse o cualquier IDE compatible con Maven.
-* Una cuenta o configuración válida de Firebase Storage, si se desea usar la carga de imágenes.
+Antes de ejecutar el proyecto, asegúrate de tener instalado:
 
-## Configuración de base de datos
+- ✅ **Java JDK 21** o superior → [Descargar](https://www.oracle.com/java/technologies/downloads/)
+- ✅ **Maven 3.9+** → [Descargar](https://maven.apache.org/download.cgi)
+- ✅ **MySQL Server 8.0+** → [Descargar](https://www.mysql.com/downloads/)
+- ✅ **IDE compatible**: NetBeans, IntelliJ IDEA, Eclipse o VS Code
+- ✅ **Cuenta Firebase** con Storage configurado (opcional, pero recomendado)
 
-El proyecto utiliza MySQL como motor de base de datos.
+---
 
-El archivo SQL principal se encuentra en:
+## 🗄️ Configuración de Base de Datos
 
-```text
+### 1. Crear la base de datos
+
+Ejecutar el script SQL que se encuentra en:
+
+```javascript
 src/main/resources/creaTablas.sql
 ```
 
-Este script crea:
+Este script crea automáticamente:
+- Base de datos `bookguest`
+- Usuario de aplicación
+- Todas las tablas necesarias
+- Datos iniciales (usuarios, categorías, libros, etc.)
+- Roles de seguridad
 
-* Base de datos `bookguest`.
-* Usuario de aplicación.
-* Usuario de reportes.
-* Tablas principales del sistema.
-* Roles.
-* Usuarios iniciales.
-* Categorías.
-* Autores.
-* Editoriales.
-* Libros.
-* Ofertas.
-* Carritos.
-* Pedidos.
-* Inventario.
-* Rutas protegidas.
-* Constantes de configuración.
+**Instrucciones:**
 
-Para cargar la base de datos, ejecutar el script `creaTablas.sql` en MySQL.
+```bash
+mysql -u root -p < src/main/resources/creaTablas.sql
+```
 
-## Configuración de conexión
+O importar el archivo SQL directamente desde MySQL Workbench o tu cliente favorito.
 
-La conexión se define en el archivo:
+### 2. Configurar conexión a la base de datos
 
-```text
+Editar el archivo:
+
+```javascript
 src/main/resources/application.properties
 ```
 
-Configuración principal:
+Asegúrate de que tengas:
 
 ```properties
+# Conexión a MySQL
 spring.datasource.url=jdbc:mysql://localhost:3306/bookguest?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
 spring.datasource.username=usuario_bookguest
-spring.datasource.password=BookGuest_2026
-```
+spring.datasource.password=tu_contraseña
 
-Puerto de ejecución:
+# Dialecto JPA/Hibernate
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
 
-```properties
+# Puerto de la aplicación
 server.port=91
 ```
 
-Por defecto, la aplicación se ejecuta en:
+---
 
-```text
-http://localhost:91
-```
+## 🔑 Usuarios de Prueba
 
-## Usuarios de prueba
-
-El script de base de datos incluye usuarios iniciales para pruebas.
+El script `creaTablas.sql` proporciona usuarios iniciales para probar la aplicación:
 
 ### Administrador
-
-```text
-Correo: admin@bookguest.com
-Rol: ROLE_ADMIN
+```javascript
+Correo:     admin@bookguest.com
+Contraseña: (revisar en creaTablas.sql)
+Rol:        ROLE_ADMIN
 ```
 
 ### Cliente
-
-```text
-Correo: cliente@bookguest.com
-Rol: ROLE_CLIENTE
+```javascript
+Correo:     cliente@bookguest.com
+Contraseña: (revisar en creaTablas.sql)
+Rol:        ROLE_CLIENTE
 ```
 
-### Cliente adicional
-
-```text
-Correo: maria@bookguest.com
+### Cliente Adicional
+```javascript
+Correo:     maria@bookguest.com
 Contraseña: Cliente123.
-Rol: ROLE_CLIENTE
+Rol:        ROLE_CLIENTE
 ```
 
-## Configuración de Firebase Storage
+---
 
-El proyecto incluye integración con Firebase Storage para la carga de imágenes.
+## 🔥 Configuración de Firebase Storage (Opcional)
 
-Configuración en `application.properties`:
+Si deseas habilitar la carga de imágenes con Firebase:
+
+### 1. Obtener credenciales de Firebase
+
+1. Ir a [Firebase Console](https://console.firebase.google.com/)
+2. Crear un nuevo proyecto o seleccionar uno existente
+3. Descargar el archivo JSON de credenciales (`bookguest-36f8e-firebase-adminsdk-...json`)
+
+### 2. Colocar el archivo de credenciales
+
+Guardar el archivo en:
+
+```javascript
+src/main/resources/firebase/
+```
+
+### 3. Configurar en application.properties
 
 ```properties
+# Firebase Storage
 firebase.bucket.name=bookguest-36f8e.firebasestorage.app
 firebase.storage.path=bookguest
 firebase.json.path=firebase
 firebase.json.file=bookguest-36f8e-firebase-adminsdk-fbsvc-c4bbaa9be2.json
 ```
 
-El archivo de credenciales debe ubicarse en:
+⚠️ **Nota de Seguridad:** No subir archivos de credenciales privadas a repositorios públicos. Usar variables de entorno en producción.
 
-```text
-src/main/resources/firebase/
+---
+
+## 🚀 Ejecución del Proyecto
+
+### Opción 1: Desde el IDE
+
+1. Clonar el repositorio:
+```bash
+   git clone https://github.com/SebasMonti/BookGuest_G6.git
 ```
 
-Nota importante: por seguridad, no se recomienda subir archivos de credenciales privadas de Firebase a repositorios públicos. En un entorno real, estas credenciales deberían manejarse mediante variables de entorno, secretos del servidor o configuración externa.
+2. Abrir el proyecto en tu IDE favorito (NetBeans, IntelliJ, Eclipse)
 
-## Ejecución del proyecto
-
-### Opción 1: Ejecutar desde el IDE
-
-1. Clonar el repositorio.
-2. Abrir el proyecto en NetBeans, IntelliJ IDEA o Eclipse.
-3. Verificar que MySQL esté activo.
-4. Ejecutar el script `creaTablas.sql`.
-5. Revisar la configuración de `application.properties`.
-6. Ejecutar la clase principal:
-
-```text
-BookguestApplication.java
+3. Verificar que MySQL esté corriendo:
+```bash
+   mysql -u root -p
 ```
 
-7. Abrir el navegador en:
+4. Ejecutar el script `creaTablas.sql`
 
-```text
-http://localhost:91
+5. Ejecutar la clase principal desde el IDE:
+    - Buscar: `BookguestApplication.java`
+    - Click derecho → Run
+
+6. Acceder a la aplicación:
+```javascript
+   http://localhost:91
 ```
 
-### Opción 2: Ejecutar con Maven
-
-Desde la raíz del proyecto, ejecutar:
+### Opción 2: Desde la terminal con Maven
 
 ```bash
+# Navegar al directorio del proyecto
+cd BookGuest_G6
+
+# Ejecutar la aplicación
 mvn spring-boot:run
 ```
 
-Luego abrir:
+Luego acceder a: `http://localhost:91`
 
-```text
-http://localhost:91
+### Opción 3: Generar archivo JAR ejecutable
+
+```bash
+# Compilar y empaquetar
+mvn clean package
+
+# Ejecutar el JAR
+java -jar target/bookguest-1.jar
 ```
 
-## Compilación del proyecto
+La aplicación estará disponible en: `http://localhost:91`
 
-Para compilar el proyecto:
+---
+
+## 📍 Rutas Principales
+
+### Rutas Públicas
+| Ruta | Descripción |
+| --- | --- |
+| `/` | Página de inicio |
+| `/login` | Formulario de inicio de sesión |
+| `/registro` | Formulario de registro |
+| `/restablecer` | Recuperación de contraseña |
+| `/error` | Página de error personalizada |
+
+### Rutas de Cliente
+| Ruta | Descripción |
+| --- | --- |
+| `/cliente/inicio` | Dashboard del cliente |
+| `/cliente/libros` | Catálogo de libros |
+| `/cliente/libro/{idLibro}` | Detalle de un libro |
+| `/cliente/ofertas` | Ofertas especiales |
+| `/cliente/carrito` | Carrito de compras |
+| `/cliente/pedidos` | Mis pedidos |
+| `/cliente/perfil` | Perfil de usuario |
+
+### Rutas de Administrador
+| Ruta | Descripción |
+| --- | --- |
+| `/admin/dashboard` | Dashboard administrativo |
+| `/admin/libros` | Gestión de libros |
+| `/admin/usuarios` | Gestión de usuarios |
+| `/admin/pedidos` | Gestión de pedidos |
+| `/admin/inventario` | Gestión de inventario |
+| `/admin/ofertas` | Gestión de ofertas |
+| `/admin/configuracion` | Configuración general |
+
+---
+
+## 🗂️ Modelo de Datos
+
+El sistema utiliza las siguientes entidades principales:
+
+- **Usuario** - Información de usuarios del sistema
+- **Rol** - Definición de roles (Admin, Cliente)
+- **Libro** - Catálogo de libros disponibles
+- **Categoría** - Categorización de libros
+- **Autor** - Información de autores
+- **Editorial** - Información de editoriales
+- **Oferta** - Promociones y descuentos
+- **Carrito** - Carrito de compras de usuario
+- **CarritoDetalle** - Items dentro del carrito
+- **Pedido** - Órdenes de compra
+- **PedidoDetalle** - Detalles de cada pedido
+- **Inventario** - Stock disponible de libros
+
+---
+
+## 🔐 Sistema de Seguridad
+
+### Roles
+
+```javascript
+ROLE_ADMIN    → Acceso a funciones administrativas
+ROLE_CLIENTE  → Acceso a funciones de cliente
+```
+
+### Mecanismos de Protección
+
+- ✅ Autenticación mediante correo y contraseña
+- ✅ Contraseñas hasheadas con bcrypt
+- ✅ Sesiones seguras
+- ✅ CSRF protection
+- ✅ XSS prevention
+- ✅ SQL injection prevention (mediante JPA)
+- ✅ Control de acceso basado en roles (RBAC)
+
+---
+
+## 🌐 Internacionalización (i18n)
+
+La aplicación soporta múltiples idiomas mediante archivos de propiedades:
+
+- `messages.properties` - Idioma por defecto
+- `messages_es.properties` - Español
+- `messages_en.properties` - Inglés
+
+Esto permite separar la lógica de texto de las vistas y facilita el mantenimiento y traducción.
+
+---
+
+## 📊 Compilación y Build
+
+### Compilar el proyecto
 
 ```bash
 mvn clean install
 ```
 
-Para generar el archivo ejecutable:
+### Generar archivo ejecutable
 
 ```bash
 mvn clean package
 ```
 
-El archivo `.jar` se generará en la carpeta:
+El archivo `.jar` se generará en la carpeta `target/`
 
-```text
-target/
+### Ejecutar tests
+
+```bash
+mvn test
 ```
 
-## Rutas principales
+---
 
-### Rutas públicas
+## 📝 Notas Importantes
 
-```text
-/
- /index
- /login
- /registro
- /registro/confirmacion
- /restablecer
- /restablecer/confirmacion
- /error
-```
+- ⚠️ Las credenciales de Firebase no deben subirse a repositorios públicos
+- ⚠️ Cambiar las contraseñas de usuarios de prueba en producción
+- ⚠️ Configurar variables de entorno para datos sensibles
+- ⚠️ Usar HTTPS en producción
+- ⚠️ Configurar adecuadamente los permisos de CORS si es necesario
 
-### Rutas de cliente
+---
 
-```text
-/cliente/inicio
-/cliente/libros
-/cliente/libro/{idLibro}
-/cliente/ofertas
-/cliente/carrito
-/cliente/pedidos
-/cliente/perfil
-```
+## 🤝 Contribuciones
 
-### Rutas de administrador
+Este es un proyecto académico. Para sugerencias o mejoras, por favor contactar a los miembros del equipo.
 
-```text
-/admin/dashboard
-/admin/inventario
-/admin/usuarios
-/admin/pedidos
-/admin/productos
-/admin/configuracion
-```
+---
 
-## Modelo de datos principal
+## 📄 Licencia
 
-El sistema utiliza las siguientes entidades principales:
+Este proyecto es propiedad del Grupo 6 de Desarrollo Web.
 
-* Usuario
-* Rol
-* Categoria
-* Autor
-* Editorial
-* Libro
-* Oferta
-* Carrito
-* CarritoDetalle
-* Pedido
-* PedidoDetalle
-* Inventario
+---
 
-Estas entidades se gestionan mediante Spring Data JPA y repositorios propios para cada módulo.
+## 📞 Contacto y Soporte
 
-## Seguridad y roles
+Para preguntas o soporte técnico, contactar con los desarrolladores del Grupo 6.
 
-El sistema define dos roles principales:
+---
 
-```text
-ROLE_ADMIN
-ROLE_CLIENTE
-```
+**Última actualización:** Julio 2026
 
-Las rutas administrativas solo pueden ser accedidas por usuarios con rol de administrador.
-
-Las rutas de cliente solo pueden ser accedidas por usuarios con rol de cliente.
-
-La autenticación se realiza mediante formulario personalizado en `/login`.
-
-## Internacionalización
-
-Los textos visibles de la aplicación se administran mediante archivos de mensajes. Esto evita quemar textos directamente en las vistas y facilita el soporte para varios idiomas.
-
-Archivos utilizados:
-
-*
-
-Estas entidades se gestionan mediante Spring Data JPA y repositorios propios para cada módulo.
-
-## Seguridad y roles
-
-El sistema define dos roles principales:
-
-```text
-ROLE_ADMIN
-ROLE_CLIENTE
-```
-
-Las rutas administrativas solo pueden ser accedidas por usuarios con rol de administrador.
-
-Las rutas de cliente solo pueden ser accedidas por usuarios con rol de cliente.
-
-La autenticación se realiza mediante formulario personalizado en `/login`.
-
-## Internacionalización
-
-Los textos visibles de la aplicación se administran mediante archivos de mensajes. Esto evita quemar textos directamente en las vistas y facilita el soporte para varios idiomas.
-
-Archivos utilizados:
-
-```text
-messages.properties
-messages_es.properties
-messages_en.properties
-```
-
-## Estado del proyecto
-
-Proyecto desarrollado como aplicación web académica para la gestión de una librería en línea. Incluye funcionalidades de catálogo, carrito, pedidos, inventario, roles, seguridad, internacionalización y carga de imágenes.
-
-## Autor
-
-Grupo 6 - Desarrollo Web_
+**Estado:** ✅ Proyecto completado y funcional
