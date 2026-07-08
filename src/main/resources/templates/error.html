@@ -1,3 +1,44 @@
-<body>
-    <div>Sí entra</div>
-</body>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+    <head>
+        <title>[[#{error.page.title}]] - [[#{aplicacion.titulo}]]</title>
+        <meta charset="UTF-8"/>
+        <link th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}" rel="stylesheet"/>
+    </head>
+
+    <body class="bg-light">
+        <main class="container py-5">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h1 class="text-danger mb-3">[[#{error.page.heading}]]</h1>
+
+                    <p>
+                        <strong>[[#{error.page.path}]]</strong>
+                        <span th:text="${path}"></span>
+                    </p>
+
+                    <p>
+                        <strong>[[#{error.page.status}]]</strong>
+                        <span th:text="${status}"></span>
+                    </p>
+
+                    <p>
+                        <strong>[[#{error.page.error}]]</strong>
+                        <span th:text="${error}"></span>
+                    </p>
+
+                    <p>
+                        <strong>[[#{error.page.message}]]</strong>
+                        <span th:text="${message}"></span>
+                    </p>
+
+                    <a th:href="@{/admin/dashboard}" class="btn btn-primary">
+                        [[#{error.page.backDashboard}]]
+                    </a>
+                </div>
+            </div>
+        </main>
+    </body>
+</html>

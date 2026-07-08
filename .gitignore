@@ -32,10 +32,24 @@ build/
 ### VS Code ###
 .vscode/
 
+# Maven / Java
+target/
+*.class
+
+# NetBeans
+nbproject/private/
+build/
+dist/
+
+# Logs
+*.log
+
+# Variables o archivos locales
+.env
+
+# Firebase
 src/main/resources/firebase/*.json
 
-src/main/resources/firebase/
-src/main/resources/firebase.json
-src/main/resources/firebase*.json
-firebase-service-account.json
-serviceAccountKey.json
+# Sistema operativo
+.DS_Store
+Thumbs.db
