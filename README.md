@@ -1,4 +1,4 @@
-# 📚 BookGuest - 
+# 📚 BookGuest 
 
 ## 🎯 Descripción del Proyecto
 
@@ -128,11 +128,11 @@ BookGuest_G6/
 
 Antes de ejecutar el proyecto, asegúrate de tener instalado:
 
-- ✅ **Java JDK 21** o superior → [Descargar](https://www.oracle.com/java/technologies/downloads/)
-- ✅ **Maven 3.9+** → [Descargar](https://maven.apache.org/download.cgi)
-- ✅ **MySQL Server 8.0+** → [Descargar](https://www.mysql.com/downloads/)
-- ✅ **IDE compatible**: NetBeans, IntelliJ IDEA, Eclipse o VS Code
-- ✅ **Cuenta Firebase** con Storage configurado (opcional, pero recomendado)
+- ✅ **Java JDK 21** o superior
+- ✅ **Maven 3.9+** 
+- ✅ **MySQL Server 8.0+** 
+- ✅ **IDE compatible**: NetBeans
+- ✅ **Cuenta Firebase**
 
 ---
 
@@ -158,33 +158,6 @@ Este script crea automáticamente:
 ```bash
 mysql -u root -p < src/main/resources/creaTablas.sql
 ```
-
-O importar el archivo SQL directamente desde MySQL Workbench o tu cliente favorito.
-
-### 2. Configurar conexión a la base de datos
-
-Editar el archivo:
-
-```javascript
-src/main/resources/application.properties
-```
-
-Asegúrate de que tengas:
-
-```properties
-# Conexión a MySQL
-spring.datasource.url=jdbc:mysql://localhost:3306/bookguest?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-spring.datasource.username=usuario_bookguest
-spring.datasource.password=tu_contraseña
-
-# Dialecto JPA/Hibernate
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
-
-# Puerto de la aplicación
-server.port=91
-```
-
 ---
 
 ## 🔑 Usuarios de Prueba
@@ -194,21 +167,18 @@ El script `creaTablas.sql` proporciona usuarios iniciales para probar la aplicac
 ### Administrador
 ```javascript
 Correo:     admin@bookguest.com
-Contraseña: (revisar en creaTablas.sql)
 Rol:        ROLE_ADMIN
 ```
 
 ### Cliente
 ```javascript
 Correo:     cliente@bookguest.com
-Contraseña: (revisar en creaTablas.sql)
 Rol:        ROLE_CLIENTE
 ```
 
 ### Cliente Adicional
 ```javascript
 Correo:     maria@bookguest.com
-Contraseña: Cliente123.
 Rol:        ROLE_CLIENTE
 ```
 
@@ -241,9 +211,6 @@ firebase.storage.path=bookguest
 firebase.json.path=firebase
 firebase.json.file=bookguest-36f8e-firebase-adminsdk-fbsvc-c4bbaa9be2.json
 ```
-
-⚠️ **Nota de Seguridad:** No subir archivos de credenciales privadas a repositorios públicos. Usar variables de entorno en producción.
-
 ---
 
 ## 🚀 Ejecución del Proyecto
@@ -383,58 +350,6 @@ La aplicación soporta múltiples idiomas mediante archivos de propiedades:
 - `messages_en.properties` - Inglés
 
 Esto permite separar la lógica de texto de las vistas y facilita el mantenimiento y traducción.
-
----
-
-## 📊 Compilación y Build
-
-### Compilar el proyecto
-
-```bash
-mvn clean install
-```
-
-### Generar archivo ejecutable
-
-```bash
-mvn clean package
-```
-
-El archivo `.jar` se generará en la carpeta `target/`
-
-### Ejecutar tests
-
-```bash
-mvn test
-```
-
----
-
-## 📝 Notas Importantes
-
-- ⚠️ Las credenciales de Firebase no deben subirse a repositorios públicos
-- ⚠️ Cambiar las contraseñas de usuarios de prueba en producción
-- ⚠️ Configurar variables de entorno para datos sensibles
-- ⚠️ Usar HTTPS en producción
-- ⚠️ Configurar adecuadamente los permisos de CORS si es necesario
-
----
-
-## 🤝 Contribuciones
-
-Este es un proyecto académico. Para sugerencias o mejoras, por favor contactar a los miembros del equipo.
-
----
-
-## 📄 Licencia
-
-Este proyecto es propiedad del Grupo 6 de Desarrollo Web.
-
----
-
-## 📞 Contacto y Soporte
-
-Para preguntas o soporte técnico, contactar con los desarrolladores del Grupo 6.
 
 ---
 
