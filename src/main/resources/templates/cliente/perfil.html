@@ -1,4 +1,500 @@
-<body>
-    <div>Sí entra</div>
-</body>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}">
+    <head th:replace="~{cliente/fragmentos :: head(#{cliente.perfil.titulo})}"></head>
+    <body>
+        <header th:replace="~{cliente/fragmentos :: header('perfil')}"></header>
+        <main class="client-page profile-page">
+            <style>
+                .profile-page {
+                    min-height: calc(100vh - 140px);
+                    padding-top: 38px;
+                    padding-bottom: 70px;
+                }
 
+                .profile-card {
+                    position: relative;
+                    overflow: hidden;
+                    min-height: 520px;
+                    padding: 24px 28px 34px;
+                    background-color: #FFFFFF;
+                    border: 1px solid #E2E6EC;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+                }
+
+                .profile-card-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 18px;
+                    margin-bottom: 14px;
+                }
+
+                .profile-card-title {
+                    margin: 0;
+                    color: #344054;
+                    font-size: 18px;
+                    font-weight: 500;
+                }
+
+                .profile-edit-button,
+                .profile-primary-button,
+                .profile-secondary-button {
+                    min-height: 42px;
+                    border-radius: 4px;
+                    padding: 0 18px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    font-size: 13px;
+                    text-decoration: none;
+                    cursor: pointer;
+                }
+
+                .profile-edit-button,
+                .profile-secondary-button {
+                    border: 1px solid #B8C0CC;
+                    background-color: #FFFFFF;
+                    color: #475467;
+                }
+
+                .profile-edit-button:hover,
+                .profile-secondary-button:hover {
+                    border-color: #0D4F8B;
+                    color: #0D4F8B;
+                }
+
+                .profile-edit-button.active,
+                .profile-primary-button {
+                    border: 1px solid #0D6EFD;
+                    background-color: #0D6EFD;
+                    color: #FFFFFF;
+                }
+
+                .profile-edit-button.active:hover,
+                .profile-primary-button:hover {
+                    border-color: #0B5ED7;
+                    background-color: #0B5ED7;
+                    color: #FFFFFF;
+                }
+
+                .profile-tab {
+                    border-bottom: 1px solid #E4E7EC;
+                    margin-bottom: 25px;
+                }
+
+                .profile-tab span {
+                    display: inline-block;
+                    border-bottom: 2px solid #1677FF;
+                    padding: 0 2px 9px;
+                    color: #667085;
+                    font-size: 13px;
+                }
+
+                .profile-section-title {
+                    margin: 0 0 23px 20px;
+                    color: #475467;
+                    font-size: 14px;
+                    font-weight: 600;
+                }
+
+                .profile-content {
+                    display: grid;
+                    grid-template-columns: minmax(0, 760px) 190px;
+                    gap: clamp(42px, 7vw, 96px);
+                    align-items: start;
+                    padding: 0 20px;
+                }
+
+                .profile-fields {
+                    display: grid;
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                    gap: 19px 22px;
+                }
+
+                .profile-field {
+                    min-width: 0;
+                }
+
+                .profile-field label {
+                    display: block;
+                    margin-bottom: 7px;
+                    color: #344054;
+                    font-size: 12px;
+                    font-weight: 500;
+                }
+
+                .profile-field input {
+                    width: 100%;
+                    min-height: 42px;
+                    border: 1px solid #CDD5DF;
+                    border-radius: 5px;
+                    background-color: #FFFFFF;
+                    color: #344054;
+                    padding: 0 13px;
+                    font-family: inherit;
+                    font-size: 13px;
+                    outline: 0;
+                }
+
+                .profile-field input:focus {
+                    border-color: #1677FF;
+                    box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.11);
+                }
+
+                .profile-field input[readonly] {
+                    background-color: #FBFCFD;
+                    color: #475467;
+                }
+
+                .profile-field-id {
+                    grid-column: 1;
+                    max-width: 120px;
+                }
+
+                .profile-password-help {
+                    display: block;
+                    margin-top: 6px;
+                    color: #667085;
+                    font-size: 11px;
+                    line-height: 1.35;
+                }
+
+                .profile-image-column {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    padding-top: 26px;
+                }
+
+                .profile-image-box {
+                    width: 156px;
+                    height: 156px;
+                    border: 1px dashed #AEB7C4;
+                    background-color: #FBFCFD;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    overflow: hidden;
+                    color: #98A2B3;
+                }
+
+                .profile-image-box img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+
+                .profile-image-fallback {
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 54px;
+                }
+
+                .profile-image-label {
+                    margin-top: 12px;
+                    border: 0;
+                    background-color: transparent;
+                    color: #1677FF;
+                    font-size: 12px;
+                    text-align: center;
+                    cursor: pointer;
+                }
+
+                .profile-image-label:hover {
+                    color: #0B5ED7;
+                    text-decoration: underline;
+                }
+
+                .profile-actions {
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 14px;
+                    margin-top: 34px;
+                    padding: 0 20px;
+                }
+
+                .profile-alert {
+                    margin: 0 20px 22px;
+                    border: 1px solid #FDA29B;
+                    background-color: #FEF3F2;
+                    color: #B42318;
+                    padding: 12px 15px;
+                    font-size: 13px;
+                }
+
+                .profile-confirmation-overlay {
+                    position: absolute;
+                    inset: 0;
+                    z-index: 10;
+                    display: flex;
+                    align-items: flex-start;
+                    justify-content: center;
+                    padding-top: 105px;
+                    background-color: rgba(226, 231, 238, 0.72);
+                }
+
+                .profile-confirmation-modal {
+                    width: min(430px, calc(100% - 36px));
+                    padding: 34px 30px 28px;
+                    border-radius: 6px;
+                    background-color: #FFFFFF;
+                    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+                    text-align: center;
+                }
+
+                .profile-confirmation-modal p {
+                    margin: 0;
+                    color: #344054;
+                    font-size: 14px;
+                }
+
+                .profile-confirmation-check {
+                    display: block;
+                    width: 100%;
+                    margin: 24px 0;
+                    color: #1683FF;
+                    font-size: 34px;
+                    text-align: center;
+                }
+
+                @media (max-width: 900px) {
+                    .profile-content {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .profile-image-column {
+                        grid-row: 1;
+                        padding-top: 0;
+                    }
+                }
+
+                @media (max-width: 620px) {
+                    .profile-card {
+                        padding: 20px 16px 28px;
+                    }
+
+                    .profile-card-header {
+                        align-items: flex-start;
+                        flex-direction: column;
+                    }
+
+                    .profile-edit-button {
+                        width: 100%;
+                    }
+
+                    .profile-content,
+                    .profile-actions {
+                        padding-left: 0;
+                        padding-right: 0;
+                    }
+
+                    .profile-section-title {
+                        margin-left: 0;
+                    }
+
+                    .profile-fields {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .profile-field-id {
+                        grid-column: auto;
+                    }
+
+                    .profile-actions {
+                        flex-direction: column-reverse;
+                    }
+
+                    .profile-primary-button,
+                    .profile-secondary-button {
+                        width: 100%;
+                    }
+                }
+            </style>
+            <section class="profile-card">
+                <div class="profile-card-header">
+                    <h1 class="profile-card-title">[[#{cliente.perfil.cuenta}]]</h1>
+                    <a th:if="${modo != 'editar'}"
+                       th:href="@{/cliente/perfil/editar}"
+                       class="profile-edit-button">
+                        <i class="fa-solid fa-pen"></i>
+                        [[#{cliente.perfil.modificar}]]
+                    </a>
+                    <span th:if="${modo == 'editar'}" class="profile-edit-button active">
+                        <i class="fa-solid fa-pen"></i>
+                        [[#{cliente.perfil.modificar}]]
+                    </span>
+                </div>
+                <div class="profile-tab">
+                    <span>[[#{cliente.perfil.datos}]]</span>
+                </div>
+                <div th:if="${mensajeError}" class="profile-alert" role="alert" th:text="${mensajeError}"></div>
+                <h2 class="profile-section-title">[[#{cliente.perfil.informacionPersonal}]]</h2>
+                <div th:if="${modo != 'editar'}" class="profile-content">
+                    <div class="profile-fields">
+                        <div class="profile-field">
+                            <label>[[#{registro.nombre}]]</label>
+                            <input type="text" th:value="${perfilUsuario.nombre}" readonly="readonly"/>
+                        </div>
+                        <div class="profile-field">
+                            <label>[[#{registro.apellidos}]]</label>
+                            <input type="text" th:value="${perfilUsuario.apellidos}" readonly="readonly"/>
+                        </div>
+                        <div class="profile-field">
+                            <label>[[#{registro.email}]]</label>
+                            <input type="email" th:value="${perfilUsuario.email}" readonly="readonly"/>
+                        </div>
+                        <div class="profile-field">
+                            <label>[[#{registro.telefono}]]</label>
+                            <input type="text" th:value="${perfilUsuario.telefono ?: '-'}" readonly="readonly"/>
+                        </div>
+                        <div class="profile-field">
+                            <label>[[#{registro.direccion}]]</label>
+                            <input type="text" th:value="${perfilUsuario.direccion ?: '-'}" readonly="readonly"/>
+                        </div>
+                        <div class="profile-field">
+                            <label>[[#{cliente.perfil.passwordActual}]]</label>
+                            <input type="text" value="••••••••••••" readonly="readonly"/>
+                        </div>
+                        <div class="profile-field profile-field-id">
+                            <label>[[#{cliente.perfil.idCuenta}]]</label>
+                            <input type="text" th:value="${perfilUsuario.idUsuario}" readonly="readonly"/>
+                        </div>
+                    </div>
+                    <div class="profile-image-column">
+                        <div class="profile-image-box">
+                            <img th:if="${perfilUsuario.rutaImagen != null and !perfilUsuario.rutaImagen.isBlank()}"
+                                 th:src="${perfilUsuario.rutaImagen}"
+                                 th:alt="|${perfilUsuario.nombre} ${perfilUsuario.apellidos}|"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
+                            <span class="profile-image-fallback"
+                                  th:style="${perfilUsuario.rutaImagen != null and !perfilUsuario.rutaImagen.isBlank()} ? 'display:none' : 'display:flex'">
+                                <i class="fa-solid fa-user"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <form th:if="${modo == 'editar'}"
+                      th:action="@{/cliente/perfil/actualizar}"
+                      method="post"
+                      enctype="multipart/form-data">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <div class="profile-content">
+                        <div class="profile-fields">
+                            <div class="profile-field">
+                                <label for="profile-name">[[#{registro.nombre}]]</label>
+                                <input id="profile-name" type="text" name="nombre" maxlength="50" required="required"
+                                       th:value="${nombreIngresado != null ? nombreIngresado : perfilUsuario.nombre}"/>
+                            </div>
+                            <div class="profile-field">
+                                <label for="profile-last-name">[[#{registro.apellidos}]]</label>
+                                <input id="profile-last-name" type="text" name="apellidos" maxlength="75" required="required"
+                                       th:value="${apellidosIngresados != null ? apellidosIngresados : perfilUsuario.apellidos}"/>
+                            </div>
+                            <div class="profile-field">
+                                <label for="profile-email">[[#{registro.email}]]</label>
+                                <input id="profile-email" type="email" name="email" maxlength="75" required="required"
+                                       th:value="${emailIngresado != null ? emailIngresado : perfilUsuario.email}"/>
+                            </div>
+                            <div class="profile-field">
+                                <label for="profile-phone">[[#{registro.telefono}]]</label>
+                                <input id="profile-phone" type="tel" name="telefono" maxlength="25"
+                                       th:value="${telefonoIngresado != null ? telefonoIngresado : perfilUsuario.telefono}"/>
+                            </div>
+                            <div class="profile-field">
+                                <label for="profile-address">[[#{registro.direccion}]]</label>
+                                <input id="profile-address" type="text" name="direccion" maxlength="255"
+                                       th:value="${direccionIngresada != null ? direccionIngresada : perfilUsuario.direccion}"/>
+                            </div>
+                            <div class="profile-field">
+                                <label for="profile-password">[[#{cliente.perfil.passwordNueva}]]</label>
+                                <input id="profile-password" type="password" name="password" minlength="8"
+                                       autocomplete="new-password"/>
+                                <span class="profile-password-help">[[#{cliente.perfil.passwordAyuda}]]</span>
+                            </div>
+                            <div class="profile-field profile-field-id">
+                                <label>[[#{cliente.perfil.idCuenta}]]</label>
+                                <input type="text" th:value="${perfilUsuario.idUsuario}" readonly="readonly"/>
+                            </div>
+                            <div class="profile-field">
+                                <label for="profile-password-confirm">[[#{cliente.perfil.passwordConfirmar}]]</label>
+                                <input id="profile-password-confirm" type="password" name="confirmarPassword" minlength="8"
+                                       autocomplete="new-password"/>
+                            </div>
+                        </div>
+                        <div class="profile-image-column">
+                            <div class="profile-image-box">
+                                <img id="profile-image-preview"
+                                     th:if="${perfilUsuario.rutaImagen != null and !perfilUsuario.rutaImagen.isBlank()}"
+                                     th:src="${perfilUsuario.rutaImagen}"
+                                     th:alt="|${perfilUsuario.nombre} ${perfilUsuario.apellidos}|"
+                                     onerror="this.style.display='none'; document.getElementById('profile-image-fallback').style.display='flex';"/>
+                                <span id="profile-image-fallback"
+                                      class="profile-image-fallback"
+                                      th:style="${perfilUsuario.rutaImagen != null and !perfilUsuario.rutaImagen.isBlank()} ? 'display:none' : 'display:flex'">
+                                    <i class="fa-solid fa-user"></i>
+                                </span>
+                            </div>
+                            <label for="profile-image-input" class="profile-image-label">
+                                [[#{cliente.perfil.seleccionarImagen}]]
+                            </label>
+                            <input id="profile-image-input" type="file" name="imagenFile" accept="image/*" hidden="hidden"/>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <a th:href="@{/cliente/perfil}" class="profile-secondary-button">
+                            [[#{cliente.perfil.descartar}]]
+                        </a>
+                        <button type="submit" class="profile-primary-button">
+                            [[#{cliente.perfil.guardar}]]
+                        </button>
+                    </div>
+                </form>
+                <div th:if="${modo == 'confirmacion'}" class="profile-confirmation-overlay" role="dialog" aria-modal="true">
+                    <div class="profile-confirmation-modal">
+                        <p>[[#{cliente.perfil.confirmacion}]]</p>
+                        <i class="fa-solid fa-check profile-confirmation-check"></i>
+                        <a th:href="@{/cliente/perfil}" class="profile-primary-button">
+                            [[#{cliente.perfil.regresar}]]
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <footer th:replace="~{cliente/fragmentos :: footer}"></footer>
+        <section th:replace="~{cliente/fragmentos :: scripts}"></section>
+        <script th:if="${modo == 'editar'}">
+            document.addEventListener("DOMContentLoaded", function () {
+                const input = document.getElementById("profile-image-input");
+                const fallback = document.getElementById("profile-image-fallback");
+
+                input.addEventListener("change", function () {
+                    const archivo = input.files && input.files[0];
+
+                    if (!archivo || !archivo.type.startsWith("image/")) {
+                        return;
+                    }
+
+                    let preview = document.getElementById("profile-image-preview");
+
+                    if (!preview) {
+                        preview = document.createElement("img");
+                        preview.id = "profile-image-preview";
+                        preview.alt = "Vista previa";
+                        fallback.parentElement.insertBefore(preview, fallback);
+                    }
+
+                    preview.src = URL.createObjectURL(archivo);
+                    preview.style.display = "block";
+                    fallback.style.display = "none";
+                });
+            });
+        </script>
+    </body>
+</html>

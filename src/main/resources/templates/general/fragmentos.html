@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
-
     <head th:fragment="head">
         <title>[[#{aplicacion.titulo}]]</title>
         <meta charset="UTF-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
         <link th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}" rel="stylesheet"/>
         <link th:href="@{/webjars/font-awesome/7.2.0/css/all.css}" rel="stylesheet"/>
-
         <script th:src="@{/webjars/bootstrap/5.3.8/js/bootstrap.bundle.min.js}"></script>
     </head>
 
@@ -20,18 +17,15 @@
     <section th:fragment="mostrarToast">
         <div aria-live="polite" aria-atomic="true"
              class="position-fixed top-50 start-50 translate-middle" style="z-index: 1080;">
-
             <div th:if="${error}" class="toast show"
                  role="alert"
                  aria-live="assertive"
                  aria-atomic="true"
                  data-bs-autohide="true">
-
                 <div class="toast-header text-white bg-danger">
                     <i class="fa-solid fa-triangle-exclamation"></i>
                     <strong class="me-auto ms-2">[[#{error}]]</strong>
                 </div>
-
                 <div class="toast-body">
                     <p>[[${error}]]</p>
                     <div class="mt-2 pt-2 border-top text-center">
@@ -40,18 +34,15 @@
                     </div>
                 </div>
             </div>
-
             <div th:if="${todoOk}" class="toast show"
                  role="status"
                  aria-live="polite"
                  aria-atomic="true"
                  data-bs-autohide="true">
-
                 <div class="toast-header text-white bg-success">
                     <i class="fa-solid fa-square-check"></i>
                     <strong class="me-auto ms-2">[[#{atencion}]]</strong>
                 </div>
-
                 <div class="toast-body">
                     <p>[[${todoOk}]]</p>
                     <div class="mt-2 pt-2 border-top text-center">
@@ -60,18 +51,14 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </section>
-
     <head th:fragment="authHead(titulo)">
         <title>[[${titulo}]] - [[#{aplicacion.titulo}]]</title>
         <meta charset="UTF-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
         <link th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}" rel="stylesheet"/>
         <link th:href="@{/webjars/font-awesome/7.2.0/css/all.css}" rel="stylesheet"/>
-
         <style>
             :root {
                 --bookguest-blue: #003F63;
@@ -284,21 +271,17 @@
             }
         </style>
     </head>
-
     <section th:fragment="authBrand" class="brand-section">
         <div>
             <div class="brand-icon">
                 <i class="fa-solid fa-book-bookmark"></i>
             </div>
-
             <h1 class="brand-title">[[#{aplicacion.titulo}]]</h1>
             <p class="brand-subtitle">[[#{aplicacion.subtitulo}]]</p>
         </div>
     </section>
-
     <section th:fragment="authScripts">
         <script th:src="@{/webjars/bootstrap/5.3.8/js/bootstrap.bundle.min.js}"></script>
-
         <script th:inline="javascript">
             document.addEventListener("DOMContentLoaded", function () {
 
@@ -417,5 +400,4 @@
             });
         </script>
     </section>
-
 </html>

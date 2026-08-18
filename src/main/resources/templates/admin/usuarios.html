@@ -1,6 +1,432 @@
-<body>
-    <aside th:replace="~{admin/fragmentos :: sidebar('usuarios')}"></aside>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}">
 
-    <div>Sí entra</div>
+    <head th:replace="~{admin/fragmentos :: head(#{admin.usuarios.titulo})}"></head>
 
-</body>
+    <body>
+        <main class="admin-layout">
+            <aside th:replace="~{admin/fragmentos :: sidebar('usuarios')}"></aside>
+
+            <section class="admin-main">
+                <header th:replace="~{admin/fragmentos :: topbar}"></header>
+
+                <div class="admin-content">
+                    <style>
+                        .users-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+                        .users-summary-item { min-height: 82px; padding: 4px 28px 4px 0; margin-right: 28px; border-right: 1px solid #E2E6EC; }
+                        .users-summary-item:last-child { margin-right: 0; border-right: 0; }
+                        .users-summary-title { margin-bottom: 10px; color: #0D6EFD; font-size: 13px; font-weight: 600; }
+                        .users-summary-title.orange { color: #E58A00; }
+                        .users-summary-title.purple { color: #7C3AED; }
+                        .users-summary-value { color: #344054; font-size: 16px; margin-bottom: 6px; }
+                        .users-summary-caption { color: #98A2B3; font-size: 12px; }
+                        .users-card-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 12px; }
+                        .users-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+                        .users-btn-primary, .users-btn-secondary { min-height: 38px; padding: 9px 16px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; line-height: 1; text-decoration: none; cursor: pointer; }
+                        .users-btn-primary { background-color: #0D6EFD; border: 1px solid #0D6EFD; color: #FFFFFF; }
+                        .users-btn-primary:hover { background-color: #0B5ED7; border-color: #0B5ED7; color: #FFFFFF; }
+                        .users-btn-secondary { background-color: #FFFFFF; border: 1px solid #D0D5DD; color: #536072; }
+                        .users-btn-secondary:hover { background-color: #F9FAFB; color: #344054; }
+                        .users-btn-secondary.disabled { opacity: 0.45; pointer-events: none; }
+                        .users-filter-box { background-color: #F9FAFB; border: 1px solid #E2E6EC; border-radius: 6px; padding: 16px; margin-bottom: 16px; }
+                        .users-filter-box label { color: #536072; font-size: 12px; }
+                        .users-table { width: 100%; margin: 0; font-size: 12px; }
+                        .users-table th { padding: 13px 10px; border-bottom: 1px solid #E2E6EC; color: #667085; font-weight: 500; white-space: nowrap; }
+                        .users-table td { padding: 13px 10px; border-bottom: 1px solid #E2E6EC; color: #344054; vertical-align: middle; white-space: nowrap; }
+                        .users-role { display: inline-flex; padding: 4px 8px; border-radius: 12px; background-color: #EEF4FF; color: #175CD3; font-size: 11px; font-weight: 600; }
+                        .users-role.admin { background-color: #F4EBFF; color: #6941C6; }
+                        .users-status-active { color: #00A651; font-weight: 500; }
+                        .users-status-inactive { color: #EF4444; font-weight: 500; }
+                        .users-empty { padding: 28px; color: #667085; font-size: 14px; text-align: center; }
+                        .users-pagination { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding-top: 14px; }
+                        .users-page-info { color: #667085; font-size: 12px; }
+                        .users-modal-layer { position: fixed; inset: 0; z-index: 1200; padding: 24px; display: flex; align-items: center; justify-content: center; overflow-y: auto; background-color: rgba(15, 23, 42, 0.34); }
+                        .users-modal { width: min(100%, 430px); max-height: 95vh; padding: 26px 28px; overflow-y: auto; border-radius: 8px; background-color: #FFFFFF; box-shadow: 0 18px 50px rgba(15, 23, 42, 0.16); }
+                        .users-modal.confirmation { width: min(100%, 470px); }
+                        .users-modal-title { margin: 0 0 18px 0; color: #1D2939; font-size: 20px; font-weight: 500; }
+                        .users-upload-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 20px; }
+                        .users-image-preview { width: 70px; height: 82px; border: 1px dashed #AEB7C5; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; background-color: #F9FAFB; color: #98A2B3; font-size: 26px; }
+                        .users-image-preview img { width: 100%; height: 100%; object-fit: cover; }
+                        .users-image-link { max-width: 145px; color: #0D6EFD; font-size: 12px; cursor: pointer; }
+                        .users-confirm-check { color: #0D6EFD; font-size: 32px; margin-left: 18px; }
+                        .users-hidden-file { display: none; }
+                        .users-form-group { margin-bottom: 12px; }
+                        .users-form-group label { display: block; margin-bottom: 6px; color: #344054; font-size: 12px; }
+                        .users-form-group input, .users-form-group select { width: 100%; min-height: 38px; padding: 8px 12px; border: 1px solid #D0D5DD; border-radius: 6px; outline: 0; color: #344054; font-size: 13px; }
+                        .users-form-group input:focus, .users-form-group select:focus { border-color: #0D6EFD; box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.10); }
+                        .users-required { color: #EF4444; }
+                        .users-field-help { margin-top: 4px; color: #0D6EFD; font-size: 11px; }
+                        .users-error, .users-client-error { padding: 10px 12px; margin-bottom: 16px; border: 1px solid #FDA29B; border-radius: 6px; background-color: #FEF3F2; color: #B42318; font-size: 12px; }
+                        .users-client-error { display: none; }
+                        .users-client-error.show { display: block; }
+                        .users-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+                        @media (max-width: 1100px) {
+                            .users-card-header { align-items: stretch; flex-direction: column; }
+                            .users-actions { justify-content: flex-start; }
+                        }
+
+                        @media (max-width: 700px) {
+                            .users-summary { grid-template-columns: 1fr; }
+                            .users-summary-item { padding: 12px 0; margin: 0; border-right: 0; border-bottom: 1px solid #E2E6EC; }
+                            .users-summary-item:last-child { border-bottom: 0; }
+                            .users-pagination, .users-modal-actions { align-items: stretch; flex-direction: column; }
+                            .users-btn-primary, .users-btn-secondary { width: 100%; }
+                            .users-modal { padding: 22px 20px; }
+                        }
+                    </style>
+
+                    <section class="admin-card p-4 mb-4">
+                        <h2 class="admin-card-title">[[#{usuarios.resumen}]]</h2>
+
+                        <div class="users-summary">
+                            <div class="users-summary-item">
+                                <div class="users-summary-title">[[#{usuarios.registrados}]]</div>
+                                <div class="users-summary-value" th:text="${totalUsuarios}">0</div>
+                                <div class="users-summary-caption">
+                                    <span th:text="${usuariosUltimosSieteDias}">0</span>
+                                    [[#{usuarios.ultimosSieteDias}]]
+                                </div>
+                            </div>
+
+                            <div class="users-summary-item">
+                                <div class="users-summary-title orange">[[#{usuarios.activos}]]</div>
+                                <div class="users-summary-value" th:text="${totalUsuariosActivos}">0</div>
+                                <div class="users-summary-caption">[[#{usuarios.cuentasHabilitadas}]]</div>
+                            </div>
+
+                            <div class="users-summary-item">
+                                <div class="users-summary-title purple">[[#{usuarios.administradores}]]</div>
+                                <div class="users-summary-value" th:text="${totalAdministradores}">0</div>
+                                <div class="users-summary-caption">[[#{usuarios.rolAdministracion}]]</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="admin-card p-4">
+                        <div class="users-card-header">
+                            <h2 class="admin-card-title mb-0">[[#{usuarios.listado}]]</h2>
+
+                            <div class="users-actions" th:if="${modo != 'seleccionar'}">
+                                <a th:href="@{/admin/usuarios/nuevo}" class="users-btn-primary">[[#{usuarios.anadir}]]</a>
+                                <a th:href="@{/admin/usuarios(page=${paginaUsuarios.number}, busqueda=${busqueda}, estado=${estado}, rol=${rolFiltro}, mostrarFiltros=${mostrarFiltros == true ? false : true})}" class="users-btn-secondary">
+                                    <i class="fa-solid fa-filter"></i> [[#{usuarios.filtros}]]
+                                </a>
+                                <a th:href="@{/admin/usuarios/seleccionar(page=${paginaUsuarios.number}, busqueda=${busqueda}, estado=${estado}, rol=${rolFiltro})}" class="users-btn-secondary">
+                                    <i class="fa-solid fa-pencil"></i> [[#{usuarios.modificar}]]
+                                </a>
+                            </div>
+
+                            <div class="users-actions" th:if="${modo == 'seleccionar'}">
+                                <a th:href="@{/admin/usuarios}" class="users-btn-primary">[[#{usuarios.cancelarAccion}]]</a>
+                                <a th:href="@{/admin/usuarios/seleccionar(page=${paginaUsuarios.number}, busqueda=${busqueda}, estado=${estado}, rol=${rolFiltro}, mostrarFiltros=${mostrarFiltros == true ? false : true})}" class="users-btn-secondary">
+                                    <i class="fa-solid fa-filter"></i> [[#{usuarios.filtros}]]
+                                </a>
+                                <button type="button" class="users-btn-secondary" onclick="modificarUsuarioSeleccionado()">
+                                    <i class="fa-solid fa-pencil"></i> [[#{usuarios.modificar}]]
+                                </button>
+                            </div>
+                        </div>
+
+                        <div th:if="${mostrarFiltros}" class="users-filter-box">
+                            <form th:action="${modo == 'seleccionar'} ? @{/admin/usuarios/seleccionar} : @{/admin/usuarios}" method="get" class="row g-3 align-items-end">
+                                <div class="col-lg-5">
+                                    <label class="form-label">[[#{usuarios.buscar}]]</label>
+                                    <input type="text" name="busqueda" class="form-control" th:value="${busqueda}" th:placeholder="#{usuarios.buscarPlaceholder}"/>
+                                </div>
+                                <div class="col-md-3 col-lg-2">
+                                    <label class="form-label">[[#{usuarios.estado}]]</label>
+                                    <select name="estado" class="form-select">
+                                        <option value="">[[#{usuarios.todos}]]</option>
+                                        <option value="activo" th:selected="${estado == 'activo'}">[[#{usuarios.activo}]]</option>
+                                        <option value="inactivo" th:selected="${estado == 'inactivo'}">[[#{usuarios.inactivo}]]</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 col-lg-2">
+                                    <label class="form-label">[[#{usuarios.rol}]]</label>
+                                    <select name="rol" class="form-select">
+                                        <option value="">[[#{usuarios.todos}]]</option>
+                                        <option value="cliente" th:selected="${rolFiltro == 'cliente'}">[[#{usuarios.rolCliente}]]</option>
+                                        <option value="admin" th:selected="${rolFiltro == 'admin'}">[[#{usuarios.rolAdmin}]]</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 col-lg-3">
+                                    <button type="submit" class="users-btn-primary">[[#{usuarios.aplicarFiltros}]]</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table users-table">
+                                <thead>
+                                    <tr>
+                                        <th th:if="${modo == 'seleccionar'}"></th>
+                                        <th>[[#{usuarios.id}]]</th>
+                                        <th>[[#{usuarios.nombre}]]</th>
+                                        <th>[[#{usuarios.correo}]]</th>
+                                        <th>[[#{usuarios.telefono}]]</th>
+                                        <th>[[#{usuarios.rol}]]</th>
+                                        <th>[[#{usuarios.totalCompras}]]</th>
+                                        <th>[[#{usuarios.fechaRegistro}]]</th>
+                                        <th>[[#{usuarios.estado}]]</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="usuario : ${paginaUsuarios.content}">
+                                        <td th:if="${modo == 'seleccionar'}">
+                                            <input type="checkbox" name="idUsuarioSeleccionado" th:value="${usuario.idUsuario}" onchange="seleccionarUsuarioUnico(this)"/>
+                                        </td>
+                                        <td th:text="${usuario.idUsuario}"></td>
+                                        <td th:text="|${usuario.nombre} ${usuario.apellidos}|"></td>
+                                        <td th:text="${usuario.email}"></td>
+                                        <td th:text="${usuario.telefono != null ? usuario.telefono : '-'}"></td>
+                                        <td>
+                                            <span th:if="${#lists.contains(usuario.roles.![nombre], 'ROLE_ADMIN')}" class="users-role admin">[[#{usuarios.rolAdmin}]]</span>
+                                            <span th:unless="${#lists.contains(usuario.roles.![nombre], 'ROLE_ADMIN')}" class="users-role">[[#{usuarios.rolCliente}]]</span>
+                                        </td>
+                                        <td th:text="${usuario.totalCompras}">0</td>
+                                        <td th:text="${usuario.fechaCreacion != null ? #temporals.format(usuario.fechaCreacion, 'yyyy-MM-dd') : '-'}"></td>
+                                        <td>
+                                            <span th:if="${usuario.activo}" class="users-status-active">[[#{usuarios.activo}]]</span>
+                                            <span th:unless="${usuario.activo}" class="users-status-inactive">[[#{usuarios.inactivo}]]</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div th:if="${paginaUsuarios.content == null or paginaUsuarios.content.empty}" class="users-empty">[[#{usuarios.sinRegistros}]]</div>
+                        </div>
+
+                        <div class="users-pagination">
+                            <a class="users-btn-secondary" th:classappend="${paginaUsuarios.first} ? ' disabled'"
+                               th:href="${modo == 'seleccionar'} ? @{/admin/usuarios/seleccionar(page=${paginaUsuarios.number - 1}, busqueda=${busqueda}, estado=${estado}, rol=${rolFiltro})} : @{/admin/usuarios(page=${paginaUsuarios.number - 1}, busqueda=${busqueda}, estado=${estado}, rol=${rolFiltro})}">
+                                [[#{usuarios.anterior}]]
+                            </a>
+                            <span class="users-page-info">
+                                [[#{usuarios.pagina}]] <span th:text="${paginaUsuarios.number + 1}">1</span> [[#{usuarios.de}]]
+                                <span th:text="${paginaUsuarios.totalPages == 0 ? 1 : paginaUsuarios.totalPages}">1</span>
+                            </span>
+                            <a class="users-btn-secondary" th:classappend="${paginaUsuarios.last} ? ' disabled'"
+                               th:href="${modo == 'seleccionar'} ? @{/admin/usuarios/seleccionar(page=${paginaUsuarios.number + 1}, busqueda=${busqueda}, estado=${estado}, rol=${rolFiltro})} : @{/admin/usuarios(page=${paginaUsuarios.number + 1}, busqueda=${busqueda}, estado=${estado}, rol=${rolFiltro})}">
+                                [[#{usuarios.siguiente}]]
+                            </a>
+                        </div>
+                    </section>
+                </div>
+            </section>
+        </main>
+
+        <section th:if="${modo == 'nuevo'}" class="users-modal-layer">
+            <form th:action="@{/admin/usuarios/guardar}" method="post" enctype="multipart/form-data"
+                  class="users-modal bookguest-users-form" data-password-required="true" novalidate="novalidate">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <h2 class="users-modal-title">[[#{usuarios.nuevo}]]</h2>
+                <div th:if="${mensajeError}" class="users-error" th:text="${mensajeError}"></div>
+                <div class="users-client-error" data-form-error></div>
+
+                <div class="users-upload-row">
+                    <div class="users-image-preview" id="previewUsuarioNuevo"><i class="fa-regular fa-user"></i></div>
+                    <label for="imagenUsuarioNuevo" class="users-image-link">[[#{usuarios.seleccionarImagen}]]</label>
+                    <input type="file" id="imagenUsuarioNuevo" name="imagenFile" class="users-hidden-file" accept="image/*" onchange="mostrarPreviewUsuario(this, 'previewUsuarioNuevo')"/>
+                </div>
+
+                <div class="users-form-group">
+                    <label>[[#{usuarios.nombre}]] <span class="users-required">*</span></label>
+                    <input type="text" name="nombre" maxlength="50" th:placeholder="#{usuarios.nombrePlaceholder}" data-required="true"/>
+                </div>
+                <div class="users-form-group">
+                    <label>[[#{usuarios.apellidos}]] <span class="users-required">*</span></label>
+                    <input type="text" name="apellidos" maxlength="75" th:placeholder="#{usuarios.apellidosPlaceholder}" data-required="true"/>
+                </div>
+                <div class="users-form-group">
+                    <label>[[#{usuarios.correo}]] <span class="users-required">*</span></label>
+                    <input type="email" name="email" maxlength="75" th:placeholder="#{usuarios.correoPlaceholder}" data-required="true" data-email="true"/>
+                </div>
+                <div class="users-form-group">
+                    <label>[[#{usuarios.telefono}]]</label>
+                    <input type="text" name="telefono" maxlength="25" th:placeholder="#{usuarios.telefonoPlaceholder}"/>
+                </div>
+                <div class="users-form-group">
+                    <label>[[#{usuarios.rol}]] <span class="users-required">*</span></label>
+                    <select name="rol" data-required="true">
+                        <option value="ROLE_CLIENTE">[[#{usuarios.rolCliente}]]</option>
+                        <option value="ROLE_ADMIN">[[#{usuarios.rolAdmin}]]</option>
+                    </select>
+                </div>
+                <div class="users-form-group">
+                    <label>[[#{usuarios.password}]] <span class="users-required">*</span></label>
+                    <input type="password" name="password" minlength="8" autocomplete="new-password" th:placeholder="#{usuarios.passwordPlaceholder}" data-password="true" data-required="true"/>
+                    <div class="users-field-help">[[#{usuarios.passwordAyuda}]]</div>
+                </div>
+                <div class="users-form-group">
+                    <label>[[#{usuarios.confirmarPassword}]] <span class="users-required">*</span></label>
+                    <input type="password" name="confirmarPassword" minlength="8" autocomplete="new-password" th:placeholder="#{usuarios.confirmarPasswordPlaceholder}" data-password-confirmation="true" data-required="true"/>
+                    <div class="users-field-help">[[#{usuarios.passwordCoinciden}]]</div>
+                </div>
+                <div class="users-modal-actions">
+                    <a th:href="@{/admin/usuarios}" class="users-btn-secondary">[[#{accion.regresar}]]</a>
+                    <button type="submit" class="users-btn-primary">[[#{usuarios.crear}]]</button>
+                </div>
+            </form>
+        </section>
+
+        <section th:if="${modo == 'modificar' and usuarioSeleccionado != null}" class="users-modal-layer">
+            <form th:action="@{/admin/usuarios/actualizar}" method="post" enctype="multipart/form-data"
+                  class="users-modal bookguest-users-form" novalidate="novalidate">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="idUsuario" th:value="${usuarioSeleccionado.idUsuario}"/>
+                <h2 class="users-modal-title">[[#{usuarios.modificarTitulo}]]</h2>
+                <div th:if="${mensajeError}" class="users-error" th:text="${mensajeError}"></div>
+                <div class="users-client-error" data-form-error></div>
+
+                <div class="users-upload-row">
+                    <div class="users-image-preview" id="previewUsuarioModificar">
+                        <img th:if="${usuarioSeleccionado.rutaImagen != null and !usuarioSeleccionado.rutaImagen.isBlank()}" th:src="${usuarioSeleccionado.rutaImagen}" th:alt="|${usuarioSeleccionado.nombre} ${usuarioSeleccionado.apellidos}|"/>
+                        <i th:if="${usuarioSeleccionado.rutaImagen == null or usuarioSeleccionado.rutaImagen.isBlank()}" class="fa-regular fa-user"></i>
+                    </div>
+                    <label for="imagenUsuarioModificar" class="users-image-link">[[#{usuarios.cambiarImagen}]]</label>
+                    <input type="file" id="imagenUsuarioModificar" name="imagenFile" class="users-hidden-file" accept="image/*" onchange="mostrarPreviewUsuario(this, 'previewUsuarioModificar')"/>
+                </div>
+
+                <div class="users-form-group">
+                    <label>[[#{usuarios.nombre}]] <span class="users-required">*</span></label>
+                    <input type="text" name="nombre" maxlength="50" th:value="${usuarioSeleccionado.nombre}" data-required="true"/>
+                </div>
+                <div class="users-form-group">
+                    <label>[[#{usuarios.apellidos}]] <span class="users-required">*</span></label>
+                    <input type="text" name="apellidos" maxlength="75" th:value="${usuarioSeleccionado.apellidos}" data-required="true"/>
+                </div>
+                <div class="users-form-group">
+                    <label>[[#{usuarios.correo}]] <span class="users-required">*</span></label>
+                    <input type="email" name="email" maxlength="75" th:value="${usuarioSeleccionado.email}" data-required="true" data-email="true"/>
+                </div>
+                <div class="users-form-group">
+                    <label>[[#{usuarios.telefono}]]</label>
+                    <input type="text" name="telefono" maxlength="25" th:value="${usuarioSeleccionado.telefono}"/>
+                </div>
+                <div class="users-form-group">
+                    <label>[[#{usuarios.rol}]] <span class="users-required">*</span></label>
+                    <select name="rol" data-required="true">
+                        <option value="ROLE_CLIENTE" th:selected="${rolUsuarioSeleccionado == 'ROLE_CLIENTE'}">[[#{usuarios.rolCliente}]]</option>
+                        <option value="ROLE_ADMIN" th:selected="${rolUsuarioSeleccionado == 'ROLE_ADMIN'}">[[#{usuarios.rolAdmin}]]</option>
+                    </select>
+                </div>
+                <div class="users-form-group">
+                    <label>[[#{usuarios.passwordNueva}]]</label>
+                    <input type="password" name="password" minlength="8" autocomplete="new-password" th:placeholder="#{usuarios.passwordConservar}" data-password="true"/>
+                    <div class="users-field-help">[[#{usuarios.passwordOpcionalAyuda}]]</div>
+                </div>
+                <div class="users-form-group">
+                    <label>[[#{usuarios.confirmarPassword}]]</label>
+                    <input type="password" name="confirmarPassword" minlength="8" autocomplete="new-password" th:placeholder="#{usuarios.confirmarPasswordPlaceholder}" data-password-confirmation="true"/>
+                </div>
+                <div class="users-modal-actions">
+                    <a th:href="@{/admin/usuarios/seleccionar}" class="users-btn-secondary">[[#{accion.cancelar}]]</a>
+                    <button type="submit" class="users-btn-primary">[[#{usuarios.confirmarCambios}]]</button>
+                </div>
+            </form>
+        </section>
+
+        <section th:if="${(modo == 'confirmacionAgregar' or modo == 'confirmacionModificar') and usuarioSeleccionado != null}" class="users-modal-layer">
+            <div class="users-modal confirmation">
+                <h2 class="users-modal-title" th:text="${modo == 'confirmacionAgregar'} ? #{usuarios.creadoCorrectamente} : #{usuarios.modificadoCorrectamente}"></h2>
+                <div class="users-upload-row">
+                    <div class="users-image-preview">
+                        <img th:if="${usuarioSeleccionado.rutaImagen != null and !usuarioSeleccionado.rutaImagen.isBlank()}" th:src="${usuarioSeleccionado.rutaImagen}" th:alt="|${usuarioSeleccionado.nombre} ${usuarioSeleccionado.apellidos}|"/>
+                        <i th:if="${usuarioSeleccionado.rutaImagen == null or usuarioSeleccionado.rutaImagen.isBlank()}" class="fa-regular fa-user"></i>
+                    </div>
+                    <span class="users-image-link" th:text="${usuarioSeleccionado.rutaImagen == null or usuarioSeleccionado.rutaImagen.isBlank()} ? #{usuarios.sinImagen} : #{usuarios.imagenGuardada}"></span>
+                    <i class="fa-solid fa-check users-confirm-check"></i>
+                </div>
+                <div class="users-form-group"><label>[[#{usuarios.nombre}]]</label><input type="text" th:value="${usuarioSeleccionado.nombre}" readonly="readonly"/></div>
+                <div class="users-form-group"><label>[[#{usuarios.apellidos}]]</label><input type="text" th:value="${usuarioSeleccionado.apellidos}" readonly="readonly"/></div>
+                <div class="users-form-group"><label>[[#{usuarios.correo}]]</label><input type="text" th:value="${usuarioSeleccionado.email}" readonly="readonly"/></div>
+                <div class="users-form-group"><label>[[#{usuarios.telefono}]]</label><input type="text" th:value="${usuarioSeleccionado.telefono != null ? usuarioSeleccionado.telefono : '-'}" readonly="readonly"/></div>
+                <div class="users-form-group"><label>[[#{usuarios.rol}]]</label><input type="text" th:value="${rolUsuarioSeleccionado == 'ROLE_ADMIN'} ? #{usuarios.rolAdmin} : #{usuarios.rolCliente}" readonly="readonly"/></div>
+                <div class="users-form-group"><label>[[#{usuarios.password}]]</label><input type="text" value="••••••••" readonly="readonly"/></div>
+                <div class="users-modal-actions"><a th:href="@{/admin/usuarios(page=${paginaUsuarios.number})}" class="users-btn-primary">[[#{accion.regresar}]]</a></div>
+            </div>
+        </section>
+
+        <section th:replace="~{admin/fragmentos :: scripts}"></section>
+
+        <script th:inline="javascript">
+            const mensajesUsuarios = {
+                seleccionar: /*[[#{usuarios.js.seleccionar}]]*/ "",
+                imagenInvalida: /*[[#{usuarios.js.imagenInvalida}]]*/ "",
+                obligatorio: /*[[#{usuarios.js.obligatorio}]]*/ "",
+                emailInvalido: /*[[#{usuarios.js.emailInvalido}]]*/ "",
+                passwordMinimo: /*[[#{usuarios.js.passwordMinimo}]]*/ "",
+                passwordCoincide: /*[[#{usuarios.js.passwordCoincide}]]*/ ""
+            };
+
+            function seleccionarUsuarioUnico(elemento) {
+                document.querySelectorAll("input[name='idUsuarioSeleccionado']").forEach(function (check) {
+                    if (check !== elemento) check.checked = false;
+                });
+            }
+
+            function modificarUsuarioSeleccionado() {
+                const seleccionado = document.querySelector("input[name='idUsuarioSeleccionado']:checked");
+                if (!seleccionado) { alert(mensajesUsuarios.seleccionar); return; }
+                const url = /*[[@{/admin/usuarios/modificar}]]*/ "/admin/usuarios/modificar";
+                window.location.href = url + "?idUsuario=" + seleccionado.value;
+            }
+
+            function mostrarPreviewUsuario(input, idPreview) {
+                const preview = document.getElementById(idPreview);
+                if (!preview || !input.files || !input.files[0]) return;
+                const archivo = input.files[0];
+                if (!archivo.type.startsWith("image/")) { input.value = ""; alert(mensajesUsuarios.imagenInvalida); return; }
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    preview.innerHTML = "";
+                    const imagen = document.createElement("img");
+                    imagen.src = event.target.result;
+                    preview.appendChild(imagen);
+                };
+                reader.readAsDataURL(archivo);
+            }
+
+            document.addEventListener("DOMContentLoaded", function () {
+                document.querySelectorAll(".bookguest-users-form").forEach(function (formulario) {
+                    formulario.addEventListener("submit", function (event) {
+                        const error = validarFormularioUsuario(formulario);
+                        if (error !== null) { event.preventDefault(); mostrarErrorUsuario(formulario, error); }
+                    });
+                    formulario.querySelectorAll("input, select").forEach(function (campo) {
+                        campo.addEventListener("input", function () { limpiarErrorUsuario(formulario); });
+                        campo.addEventListener("change", function () { limpiarErrorUsuario(formulario); });
+                    });
+                });
+            });
+
+            function validarFormularioUsuario(formulario) {
+                for (const campo of formulario.querySelectorAll("[data-required='true']")) {
+                    if (campo.value.trim().length === 0) { campo.focus(); return mensajesUsuarios.obligatorio; }
+                }
+                const email = formulario.querySelector("[data-email='true']");
+                if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) { email.focus(); return mensajesUsuarios.emailInvalido; }
+                const password = formulario.querySelector("[data-password='true']");
+                const confirmacion = formulario.querySelector("[data-password-confirmation='true']");
+                const validarPassword = formulario.dataset.passwordRequired === "true" || (password && password.value.length > 0) || (confirmacion && confirmacion.value.length > 0);
+                if (validarPassword) {
+                    if (!password || password.value.length < 8) { if (password) password.focus(); return mensajesUsuarios.passwordMinimo; }
+                    if (!confirmacion || password.value !== confirmacion.value) { if (confirmacion) confirmacion.focus(); return mensajesUsuarios.passwordCoincide; }
+                }
+                return null;
+            }
+
+            function mostrarErrorUsuario(formulario, mensaje) {
+                const contenedor = formulario.querySelector("[data-form-error]");
+                if (contenedor) { contenedor.textContent = mensaje; contenedor.classList.add("show"); }
+            }
+
+            function limpiarErrorUsuario(formulario) {
+                const contenedor = formulario.querySelector("[data-form-error]");
+                if (contenedor) { contenedor.textContent = ""; contenedor.classList.remove("show"); }
+            }
+        </script>
+    </body>
+</html>

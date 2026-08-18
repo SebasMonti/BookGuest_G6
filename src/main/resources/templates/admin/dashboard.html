@@ -1,19 +1,14 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org">
-
+      xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}">
     <head th:replace="~{admin/fragmentos :: head(#{admin.dashboard.titulo})}"></head>
-
     <body>
         <main class="admin-layout">
-
             <aside th:replace="~{admin/fragmentos :: sidebar('dashboard')}"></aside>
-
             <section class="admin-main">
                 <header th:replace="~{admin/fragmentos :: topbar}"></header>
-
                 <div class="admin-content">
-
                     <style>
                         .dashboard-grid {
                             display: grid;
@@ -228,13 +223,10 @@
                             }
                         }
                     </style>
-
                     <section class="mb-4">
                         <h1 class="h4 mb-1">[[#{admin.dashboard.titulo}]]</h1>
                     </section>
-
                     <section class="dashboard-grid">
-
                         <article class="dashboard-stat-card">
                             <div class="dashboard-stat-header">
                                 <p class="dashboard-stat-title">[[#{admin.dashboard.librosActivos}]]</p>
@@ -245,7 +237,6 @@
                             <div class="dashboard-stat-value" th:text="${totalProductos}">0</div>
                             <div class="dashboard-stat-muted">[[#{admin.dashboard.productosRegistradosInventario}]]</div>
                         </article>
-
                         <article class="dashboard-stat-card">
                             <div class="dashboard-stat-header">
                                 <p class="dashboard-stat-title">[[#{categoria.total}]]</p>
@@ -256,7 +247,6 @@
                             <div class="dashboard-stat-value" th:text="${totalCategorias}">0</div>
                             <div class="dashboard-stat-muted">[[#{admin.dashboard.categoriasRegistradas}]]</div>
                         </article>
-
                         <article class="dashboard-stat-card">
                             <div class="dashboard-stat-header">
                                 <p class="dashboard-stat-title">[[#{admin.dashboard.stockTotal}]]</p>
@@ -267,7 +257,6 @@
                             <div class="dashboard-stat-value" th:text="${totalExistencias}">0</div>
                             <div class="dashboard-stat-muted">[[#{admin.dashboard.copiasDisponiblesVenta}]]</div>
                         </article>
-
                         <article class="dashboard-stat-card">
                             <div class="dashboard-stat-header">
                                 <p class="dashboard-stat-title">[[#{admin.dashboard.valorInventario}]]</p>
@@ -280,17 +269,13 @@
                             </div>
                             <div class="dashboard-stat-muted">[[#{admin.dashboard.precioPorExistenciasDisponibles}]]</div>
                         </article>
-
                     </section>
-
                     <section class="dashboard-section-grid">
-
                         <article class="dashboard-card">
                             <div class="dashboard-card-header">
                                 <h2 class="dashboard-card-title">[[#{admin.dashboard.ultimosLibrosAgregados}]]</h2>
                                 <a th:href="@{/admin/inventario}" class="dashboard-link">[[#{admin.dashboard.verInventario}]]</a>
                             </div>
-
                             <div class="table-responsive">
                                 <table class="dashboard-table">
                                     <thead>
@@ -302,7 +287,6 @@
                                             <th>[[#{pedido.estado}]]</th>
                                         </tr>
                                     </thead>
-
                                     <tbody>
                                         <tr th:each="libro : ${ultimosLibros}">
                                             <td>
@@ -318,15 +302,11 @@
                                                     <span th:text="${libro.titulo}"></span>
                                                 </div>
                                             </td>
-
                                             <td th:text="${libro.autor != null ? libro.autor.nombre : #messages.msg('cliente.libro.sinAutor')}"></td>
-
                                             <td>
                                                 ₡<span th:text="${#numbers.formatDecimal(libro.precio, 1, 'COMMA', 0, 'POINT')}">0</span>
                                             </td>
-
                                             <td th:text="${libro.existencias}">0</td>
-
                                             <td>
                                                 <span th:if="${libro.existencias > 5}" class="dashboard-status-ok">
                                                     [[#{inventario.disponible}]]
@@ -341,21 +321,17 @@
                                         </tr>
                                     </tbody>
                                 </table>
-
                                 <div th:if="${ultimosLibros == null or ultimosLibros.empty}" class="dashboard-empty">
                                     [[#{admin.dashboard.sinLibrosRegistrados}]]
                                 </div>
                             </div>
                         </article>
-
                         <article class="dashboard-card">
                             <div class="dashboard-card-header">
                                 <h2 class="dashboard-card-title">[[#{inventario.alertas}]]</h2>
                                 <a th:href="@{/admin/inventario(estado='pocas')}" class="dashboard-link">[[#{admin.dashboard.revisar}]]</a>
                             </div>
-
                             <div class="dashboard-alert-list">
-
                                 <div class="dashboard-alert-item">
                                     <div>
                                         <div class="dashboard-alert-title">[[#{inventario.pocasUnidades}]]</div>
@@ -363,7 +339,6 @@
                                     </div>
                                     <strong class="dashboard-status-low" th:text="${totalPocasUnidades}">0</strong>
                                 </div>
-
                                 <div class="dashboard-alert-item">
                                     <div>
                                         <div class="dashboard-alert-title">[[#{inventario.noDisponibles}]]</div>
@@ -371,20 +346,15 @@
                                     </div>
                                     <strong class="dashboard-status-empty" th:text="${totalSinStock}">0</strong>
                                 </div>
-
                             </div>
                         </article>
-
                     </section>
-
                     <section class="dashboard-bottom-grid">
-
                         <article class="dashboard-card">
                             <div class="dashboard-card-header">
                                 <h2 class="dashboard-card-title">[[#{admin.dashboard.librosPocasUnidades}]]</h2>
                                 <a th:href="@{/admin/inventario(estado='pocas')}" class="dashboard-link">[[#{admin.dashboard.verTodos}]]</a>
                             </div>
-
                             <div class="table-responsive">
                                 <table class="dashboard-table">
                                     <thead>
@@ -402,19 +372,16 @@
                                         </tr>
                                     </tbody>
                                 </table>
-
                                 <div th:if="${librosBajoStock == null or librosBajoStock.empty}" class="dashboard-empty">
                                     [[#{admin.dashboard.sinLibrosPocasUnidades}]]
                                 </div>
                             </div>
                         </article>
-
                         <article class="dashboard-card">
                             <div class="dashboard-card-header">
                                 <h2 class="dashboard-card-title">[[#{admin.dashboard.librosNoDisponibles}]]</h2>
                                 <a th:href="@{/admin/inventario(estado='sin_stock')}" class="dashboard-link">[[#{admin.dashboard.verTodos}]]</a>
                             </div>
-
                             <div class="table-responsive">
                                 <table class="dashboard-table">
                                     <thead>
@@ -432,19 +399,15 @@
                                         </tr>
                                     </tbody>
                                 </table>
-
                                 <div th:if="${librosSinStock == null or librosSinStock.empty}" class="dashboard-empty">
                                     [[#{admin.dashboard.sinLibrosSinStock}]]
                                 </div>
                             </div>
                         </article>
-
                     </section>
-
                 </div>
             </section>
         </main>
-
         <section th:replace="~{admin/fragmentos :: scripts}"></section>
     </body>
 </html>

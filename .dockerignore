@@ -8,6 +8,7 @@ nbproject/
 !.env.example
 *.pem
 *.key
+src/main/resources/firebase/*.json
 *.log
 .tmp-release-validation-*/
 src/main/resources/application-local.properties

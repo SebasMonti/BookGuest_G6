@@ -59,34 +59,6 @@ public class LoginController {
         return "registroConfirmacion";
     }
 
-    @GetMapping("/restablecer")
-    public String restablecer() {
-        return "restablecer";
-    }
-
-    @PostMapping("/restablecer")
-    public String procesarRestablecer(@RequestParam String email,
-            @RequestParam String nuevaPassword,
-            @RequestParam String confirmarPassword,
-            RedirectAttributes redirectAttributes,
-            Locale locale) {
-
-        try {
-            usuarioService.restablecerPassword(email, nuevaPassword, confirmarPassword);
-            redirectAttributes.addFlashAttribute("mensajeOk", getMensaje("usuario.restablecer.ok", locale));
-            return "redirect:/restablecer/confirmacion";
-
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("mensajeError", getMensaje(e.getMessage(), locale));
-            return "redirect:/restablecer";
-        }
-    }
-
-    @GetMapping("/restablecer/confirmacion")
-    public String restablecerConfirmacion() {
-        return "restablecerConfirmacion";
-    }
-
     @GetMapping("/post-login")
     public String postLogin(Authentication authentication) {
         boolean esAdmin = authentication.getAuthorities()

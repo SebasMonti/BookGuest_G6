@@ -2,6 +2,9 @@ package com.bookguest.controller;
 
 import com.bookguest.service.CarritoService;
 import java.security.Principal;
+import java.util.Locale;
+import org.springframework.context.MessageSource;
+import org.springframework.context.NoSuchMessageException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,9 +18,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class CarritoController {
 
     private final CarritoService carritoService;
+    private final MessageSource messageSource;
 
-    public CarritoController(CarritoService carritoService) {
+    public CarritoController(CarritoService carritoService, MessageSource messageSource) {
         this.carritoService = carritoService;
+        this.messageSource = messageSource;
     }
 
     @GetMapping
@@ -30,13 +35,14 @@ public class CarritoController {
     public String agregar(@RequestParam Long idLibro,
             @RequestParam(defaultValue = "1") int cantidad,
             Principal principal,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes,
+            Locale locale) {
 
         try {
             carritoService.agregarLibro(principal.getName(), idLibro, cantidad);
-            redirectAttributes.addFlashAttribute("mensajeOk", "Libro agregado al carrito.");
+            redirectAttributes.addFlashAttribute("mensajeOk", getMensaje("carrito.mensaje.agregado", locale));
         } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("mensajeError", e.getMessage());
+            redirectAttributes.addFlashAttribute("mensajeError", getMensaje(e.getMessage(), locale));
         }
 
         return "redirect:/cliente/carrito";
@@ -46,12 +52,13 @@ public class CarritoController {
     public String actualizar(@RequestParam Long idLibro,
             @RequestParam int cantidad,
             Principal principal,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes,
+            Locale locale) {
 
         try {
             carritoService.actualizarCantidad(principal.getName(), idLibro, cantidad);
         } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("mensajeError", e.getMessage());
+            redirectAttributes.addFlashAttribute("mensajeError", getMensaje(e.getMessage(), locale));
         }
 
         return "redirect:/cliente/carrito";
@@ -69,5 +76,13 @@ public class CarritoController {
         model.addAttribute("detallesCarrito", carritoService.getDetallesCarrito(email));
         model.addAttribute("subtotalCarrito", carritoService.getSubtotalCarrito(email));
         model.addAttribute("totalCarrito", carritoService.getTotalCarrito(email));
+    }
+
+    private String getMensaje(String clave, Locale locale) {
+        try {
+            return messageSource.getMessage(clave, null, locale);
+        } catch (NoSuchMessageException e) {
+            return messageSource.getMessage("mensaje.error.general", null, locale);
+        }
     }
 }
