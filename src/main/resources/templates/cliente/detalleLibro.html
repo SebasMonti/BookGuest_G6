@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org">
+      xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}">
 
     <head th:replace="~{cliente/fragmentos :: head(#{cliente.producto.titulo})}"></head>
-
     <body>
-
         <header th:replace="~{cliente/fragmentos :: header('libros')}"></header>
-
         <main class="client-page">
-
             <style>
                 .product-section {
                     display: grid;
@@ -94,6 +91,25 @@
                     margin-bottom: 22px;
                 }
 
+                .product-price .product-regular-price {
+                    margin-left: 9px;
+                    color: #98A2B3;
+                    font-size: 15px;
+                    font-weight: 400;
+                    text-decoration: line-through;
+                }
+
+                .product-price .product-offer-label {
+                    display: inline-block;
+                    margin-left: 8px;
+                    padding: 4px 7px;
+                    border-radius: 4px;
+                    color: #FFFFFF;
+                    background: #0B5A91;
+                    font-size: 11px;
+                    vertical-align: middle;
+                }
+
                 .product-description-title {
                     font-size: 20px;
                     font-weight: 600;
@@ -176,11 +192,23 @@
                     align-items: center;
                     justify-content: center;
                     text-decoration: none;
+                    padding: 0;
+                    cursor: pointer;
                 }
 
                 .product-heart:hover {
                     color: #0D4F8B;
                     border-color: #0D4F8B;
+                }
+
+                .product-heart.is-favorite {
+                    color: #D92D20;
+                    border-color: #FDA29B;
+                    background-color: #FFF5F4;
+                }
+
+                .product-heart-form {
+                    margin: 0;
                 }
 
                 .detalle-category-header {
@@ -340,7 +368,17 @@
                     </div>
 
                     <div class="product-price">
-                        ₡<span th:text="${#numbers.formatDecimal(libro.precio, 1, 'COMMA', 0, 'POINT')}">0</span>
+                        <span th:if="${ofertaLibro == null}">
+                            ₡<span th:text="${#numbers.formatDecimal(libro.precio, 1, 'COMMA', 0, 'POINT')}">0</span>
+                        </span>
+                        <span th:if="${ofertaLibro != null}">
+                            ₡<span th:text="${#numbers.formatDecimal(ofertaLibro.precioOferta, 1, 'COMMA', 0, 'POINT')}">0</span>
+                            <span class="product-regular-price">
+                                ₡<span th:text="${#numbers.formatDecimal(libro.precio, 1, 'COMMA', 0, 'POINT')}">0</span>
+                            </span>
+                            <span class="product-offer-label"
+                                  th:text="|-${#numbers.formatDecimal(ofertaLibro.porcentajeDescuento, 1, 'COMMA', 0, 'POINT')}%|">-10%</span>
+                        </span>
                     </div>
 
                     <h2 class="product-description-title">[[#{libro.descripcion}]]</h2>
@@ -366,9 +404,16 @@
                             </button>
                         </form>
 
-                        <a th:href="@{/cliente/libros}" class="product-heart" th:title="#{cliente.icono.favorito}">
-                            <i class="fa-regular fa-heart"></i>
-                        </a>
+                        <form th:action="@{/cliente/favoritos/alternar}" method="post" class="product-heart-form">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <input type="hidden" name="idLibro" th:value="${libro.idLibro}"/>
+                            <input type="hidden" name="retorno" value="detalle"/>
+                            <button type="submit" class="product-heart"
+                                    th:classappend="${idsFavoritos.contains(libro.idLibro)} ? ' is-favorite'"
+                                    th:title="${idsFavoritos.contains(libro.idLibro)} ? #{cliente.favoritos.quitar} : #{cliente.favoritos.agregar}">
+                                <i th:class="${idsFavoritos.contains(libro.idLibro)} ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </section>
@@ -419,31 +464,34 @@
                         [[#{cliente.ofertas.titulo}]]
                     </h2>
 
-                    <div class="offer-timer">
+                    <div th:if="${ofertas != null and !ofertas.empty}"
+                         class="offer-timer"
+                         data-offer-countdown="true"
+                         th:attr="data-offer-end=${finOfertaEpoch}">
                         <div class="timer-item">
                             <small>[[#{cliente.tiempo.dias}]]</small>
-                            <strong>03</strong>
+                            <strong data-countdown-days>00</strong>
                         </div>
 
                         <strong>:</strong>
 
                         <div class="timer-item">
                             <small>[[#{cliente.tiempo.horas}]]</small>
-                            <strong>23</strong>
+                            <strong data-countdown-hours>00</strong>
                         </div>
 
                         <strong>:</strong>
 
                         <div class="timer-item">
                             <small>[[#{cliente.tiempo.minutos}]]</small>
-                            <strong>19</strong>
+                            <strong data-countdown-minutes>00</strong>
                         </div>
 
                         <strong>:</strong>
 
                         <div class="timer-item">
                             <small>[[#{cliente.tiempo.segundos}]]</small>
-                            <strong>56</strong>
+                            <strong data-countdown-seconds>00</strong>
                         </div>
                     </div>
                 </div>
@@ -455,56 +503,61 @@
                         <div class="book-cover-box">
 
                             <span class="book-discount"
-                                  th:text="${iteracion.index == 0 ? '-40%' : (iteracion.index == 1 ? '-35%' : (iteracion.index == 2 ? '-30%' : '-25%'))}">
-                                -25%
+                                  th:text="|-${#numbers.formatDecimal(oferta.porcentajeDescuento, 1, 'COMMA', 0, 'POINT')}%|">
+                                -10%
                             </span>
 
                             <div class="book-actions">
-                                <a th:href="@{/cliente/libro/{idLibro}(idLibro=${oferta.idLibro})}"
-                                   class="book-action"
-                                   th:title="#{cliente.icono.favorito}">
-                                    <i class="fa-regular fa-heart"></i>
-                                </a>
+                                <form th:action="@{/cliente/favoritos/alternar}" method="post" class="book-favorite-form">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <input type="hidden" name="idLibro" th:value="${oferta.libro.idLibro}"/>
+                                    <input type="hidden" name="retorno" value="detalle"/>
+                                    <button type="submit" class="book-action"
+                                            th:classappend="${idsFavoritos.contains(oferta.libro.idLibro)} ? ' is-favorite'"
+                                            th:title="${idsFavoritos.contains(oferta.libro.idLibro)} ? #{cliente.favoritos.quitar} : #{cliente.favoritos.agregar}">
+                                        <i th:class="${idsFavoritos.contains(oferta.libro.idLibro)} ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+                                    </button>
+                                </form>
 
-                                <a th:href="@{/cliente/libro/{idLibro}(idLibro=${oferta.idLibro})}"
+                                <a th:href="@{/cliente/libro/{idLibro}(idLibro=${oferta.libro.idLibro})}"
                                    class="book-action"
                                    th:title="#{cliente.icono.verDetalle}">
                                     <i class="fa-regular fa-eye"></i>
                                 </a>
                             </div>
 
-                            <a th:href="@{/cliente/libro/{idLibro}(idLibro=${oferta.idLibro})}">
-                                <img th:if="${oferta.rutaImagen != null and !oferta.rutaImagen.isBlank()}"
-                                     th:src="${oferta.rutaImagen}"
-                                     th:alt="${oferta.titulo}"
+                            <a th:href="@{/cliente/libro/{idLibro}(idLibro=${oferta.libro.idLibro})}">
+                                <img th:if="${oferta.libro.rutaImagen != null and !oferta.libro.rutaImagen.isBlank()}"
+                                     th:src="${oferta.libro.rutaImagen}"
+                                     th:alt="${oferta.libro.titulo}"
                                      class="book-cover"/>
 
-                                <div th:if="${oferta.rutaImagen == null or oferta.rutaImagen.isBlank()}"
+                                <div th:if="${oferta.libro.rutaImagen == null or oferta.libro.rutaImagen.isBlank()}"
                                      class="book-cover-placeholder visible">
-                                    <span th:text="${oferta.titulo}"></span>
+                                    <span th:text="${oferta.libro.titulo}"></span>
                                 </div>
                             </a>
 
-                            <a th:href="@{/cliente/libro/{idLibro}(idLibro=${oferta.idLibro})}"
+                            <a th:href="@{/cliente/libro/{idLibro}(idLibro=${oferta.libro.idLibro})}"
                                class="book-add">
                                 [[#{cliente.carrito.anadir}]]
                             </a>
                         </div>
 
-                        <a th:href="@{/cliente/libro/{idLibro}(idLibro=${oferta.idLibro})}"
+                        <a th:href="@{/cliente/libro/{idLibro}(idLibro=${oferta.libro.idLibro})}"
                            class="book-title"
-                           th:text="${oferta.titulo}"></a>
+                           th:text="${oferta.libro.titulo}"></a>
 
                         <div class="book-author"
-                             th:text="${oferta.autor != null ? oferta.autor.nombre : #messages.msg('cliente.libro.sinAutor')}"></div>
+                             th:text="${oferta.libro.autor != null ? oferta.libro.autor.nombre : #messages.msg('cliente.libro.sinAutor')}"></div>
 
                         <div>
                             <span class="book-price">
-                                ₡<span th:text="${#numbers.formatDecimal(oferta.precio, 1, 'COMMA', 0, 'POINT')}">0</span>
+                                ₡<span th:text="${#numbers.formatDecimal(oferta.precioOferta, 1, 'COMMA', 0, 'POINT')}">0</span>
                             </span>
 
                             <span class="book-old-price">
-                                ₡<span th:text="${#numbers.formatDecimal(oferta.precio.multiply(T(java.math.BigDecimal).valueOf(1.25)), 1, 'COMMA', 0, 'POINT')}">0</span>
+                                ₡<span th:text="${#numbers.formatDecimal(oferta.libro.precio, 1, 'COMMA', 0, 'POINT')}">0</span>
                             </span>
                         </div>
 
@@ -515,7 +568,7 @@
                             <i class="fa-solid fa-star"></i>
                             <i class="fa-solid fa-star-half-stroke"></i>
                             <span>
-                                (<span th:text="${oferta.idLibro + 70}">75</span>)
+                                (<span th:text="${oferta.libro.idLibro + 70}">75</span>)
                             </span>
                         </div>
                     </article>

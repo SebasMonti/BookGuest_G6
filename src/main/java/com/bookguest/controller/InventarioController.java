@@ -3,6 +3,8 @@ package com.bookguest.controller;
 import com.bookguest.domain.Libro;
 import com.bookguest.service.LibroService;
 import java.io.IOException;
+import java.util.Locale;
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,9 +20,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class InventarioController {
 
     private final LibroService libroService;
+    private final MessageSource messageSource;
 
-    public InventarioController(LibroService libroService) {
+    public InventarioController(LibroService libroService,
+            MessageSource messageSource) {
         this.libroService = libroService;
+        this.messageSource = messageSource;
     }
 
     @GetMapping
@@ -45,6 +50,7 @@ public class InventarioController {
     @PostMapping("/guardar")
     public String guardar(@RequestParam String titulo,
             @RequestParam String autor,
+            @RequestParam String descripcion,
             @RequestParam String precio,
             @RequestParam String editorial,
             @RequestParam String isbn,
@@ -52,12 +58,14 @@ public class InventarioController {
             @RequestParam String categoria,
             @RequestParam(defaultValue = "0") int existencias,
             @RequestParam("imagenFile") MultipartFile imagenFile,
-            RedirectAttributes redirectAttributes) throws IOException {
+            RedirectAttributes redirectAttributes,
+            Locale locale) throws IOException {
 
         try {
             Libro libro = libroService.crearDesdeInventario(
                     titulo,
                     autor,
+                    descripcion,
                     precio,
                     editorial,
                     isbn,
@@ -70,7 +78,7 @@ public class InventarioController {
             return "redirect:/admin/inventario/confirmacion?idLibro=" + libro.getIdLibro();
 
         } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("mensajeError", e.getMessage());
+            redirectAttributes.addFlashAttribute("mensajeError", getMensaje(e.getMessage(), locale));
             return "redirect:/admin/inventario/nuevo";
         }
     }
@@ -108,6 +116,7 @@ public class InventarioController {
     public String actualizar(@RequestParam Long idLibro,
             @RequestParam String titulo,
             @RequestParam String autor,
+            @RequestParam String descripcion,
             @RequestParam String precio,
             @RequestParam String editorial,
             @RequestParam String isbn,
@@ -115,13 +124,15 @@ public class InventarioController {
             @RequestParam String categoria,
             @RequestParam(defaultValue = "0") int existencias,
             @RequestParam("imagenFile") MultipartFile imagenFile,
-            RedirectAttributes redirectAttributes) throws IOException {
+            RedirectAttributes redirectAttributes,
+            Locale locale) throws IOException {
 
         try {
             Libro libro = libroService.actualizarDesdeInventario(
                     idLibro,
                     titulo,
                     autor,
+                    descripcion,
                     precio,
                     editorial,
                     isbn,
@@ -138,7 +149,7 @@ public class InventarioController {
             return "redirect:/admin/inventario/modificado?idLibro=" + libro.getIdLibro();
 
         } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("mensajeError", e.getMessage());
+            redirectAttributes.addFlashAttribute("mensajeError", getMensaje(e.getMessage(), locale));
             return "redirect:/admin/inventario/modificar?idLibro=" + idLibro;
         }
     }
@@ -168,11 +179,16 @@ public class InventarioController {
         model.addAttribute("modo", modo);
         model.addAttribute("totalCategorias", libroService.getTotalCategorias());
         model.addAttribute("totalProductos", libroService.getTotalLibrosActivos());
+        model.addAttribute("valorTotalInventario", libroService.getValorTotalInventario());
         model.addAttribute("totalSinStock", libroService.getTotalSinStock());
         model.addAttribute("totalPocasUnidades", libroService.getTotalPocasUnidades());
 
         if (idLibro != null) {
             model.addAttribute("libroSeleccionado", libroService.getLibro(idLibro));
         }
+    }
+
+    private String getMensaje(String clave, Locale locale) {
+        return messageSource.getMessage(clave, null, clave, locale);
     }
 }
