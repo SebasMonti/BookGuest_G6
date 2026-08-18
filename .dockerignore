@@ -1,0 +1,14 @@
+target/
+.git/
+.idea/
+nbproject/
+*.tmp
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.log
+.tmp-release-validation-*/
+src/main/resources/application-local.properties
+src/main/resources/application-*.local.properties

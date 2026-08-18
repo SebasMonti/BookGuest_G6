@@ -60,8 +60,6 @@ public class ProjectConfig {
                         "/login",
                         "/registro",
                         "/registro/confirmacion",
-                        "/restablecer",
-                        "/restablecer/confirmacion",
                         "/error",
                         "/webjars/**"
                 ).permitAll()
