@@ -85,14 +85,6 @@ public class LibroService {
                 .toList();
     }
 
-    public List<Libro> getOfertasCliente() {
-        return getLibrosCliente()
-                .stream()
-                .sorted((l1, l2) -> l1.getPrecio().compareTo(l2.getPrecio()))
-                .limit(4)
-                .toList();
-    }
-
     public List<Libro> getLibrosCliente() {
         return libroRepository.findByActivoTrue()
                 .stream()
@@ -129,6 +121,7 @@ public class LibroService {
     @Transactional
     public Libro crearDesdeInventario(String titulo,
             String autorNombre,
+            String descripcion,
             String precioTexto,
             String editorialNombre,
             String isbn,
@@ -137,27 +130,28 @@ public class LibroService {
             int existencias,
             MultipartFile imagenFile) throws IOException {
 
-        validarTextoObligatorio(titulo, "El título es obligatorio.");
-        validarTextoObligatorio(autorNombre, "El autor es obligatorio.");
-        validarTextoObligatorio(precioTexto, "El precio es obligatorio.");
-        validarTextoObligatorio(editorialNombre, "La editorial es obligatoria.");
-        validarTextoObligatorio(isbn, "El ISBN es obligatorio.");
-        validarTextoObligatorio(ubicacionFisica, "La ubicación física es obligatoria.");
-        validarTextoObligatorio(categoriaNombre, "La categoría es obligatoria.");
+        validarTextoObligatorio(titulo, "inventario.error.tituloRequerido");
+        validarTextoObligatorio(autorNombre, "inventario.error.autorRequerido");
+        validarTextoObligatorio(descripcion, "inventario.error.descripcionRequerida");
+        validarTextoObligatorio(precioTexto, "inventario.error.precioRequerido");
+        validarTextoObligatorio(editorialNombre, "inventario.error.editorialRequerida");
+        validarTextoObligatorio(isbn, "inventario.error.isbnRequerido");
+        validarTextoObligatorio(ubicacionFisica, "inventario.error.ubicacionRequerida");
+        validarTextoObligatorio(categoriaNombre, "inventario.error.categoriaRequerida");
         validarImagenObligatoria(imagenFile);
 
         BigDecimal precio = convertirPrecio(precioTexto);
         validarPrecio(precio);
 
         if (existencias < 0) {
-            throw new IllegalArgumentException("Las existencias no pueden ser negativas.");
+            throw new IllegalArgumentException("inventario.error.existenciasNegativas");
         }
 
         String isbnNormalizado = normalizarIsbn(isbn);
         validarIsbn13(isbnNormalizado);
 
         if (libroRepository.existsByIsbn(isbnNormalizado)) {
-            throw new IllegalArgumentException("Ya existe un libro registrado con ese ISBN.");
+            throw new IllegalArgumentException("inventario.error.isbnDuplicado");
         }
 
         Autor autor = obtenerOCrearAutor(autorNombre);
@@ -174,7 +168,7 @@ public class LibroService {
         libro.setCategoria(categoria);
         libro.setExistencias(existencias);
         libro.setActivo(true);
-        libro.setDescripcion("Libro registrado desde inventario.");
+        libro.setDescripcion(descripcion.trim());
 
         String rutaImagen = firebaseStorageService.subirImagen(imagenFile, "libros");
         libro.setRutaImagen(rutaImagen);
@@ -187,6 +181,7 @@ public class LibroService {
     public Libro actualizarDesdeInventario(Long idLibro,
             String titulo,
             String autorNombre,
+            String descripcion,
             String precioTexto,
             String editorialNombre,
             String isbn,
@@ -201,26 +196,27 @@ public class LibroService {
             return null;
         }
 
-        validarTextoObligatorio(titulo, "El título es obligatorio.");
-        validarTextoObligatorio(autorNombre, "El autor es obligatorio.");
-        validarTextoObligatorio(precioTexto, "El precio es obligatorio.");
-        validarTextoObligatorio(editorialNombre, "La editorial es obligatoria.");
-        validarTextoObligatorio(isbn, "El ISBN es obligatorio.");
-        validarTextoObligatorio(ubicacionFisica, "La ubicación física es obligatoria.");
-        validarTextoObligatorio(categoriaNombre, "La categoría es obligatoria.");
+        validarTextoObligatorio(titulo, "inventario.error.tituloRequerido");
+        validarTextoObligatorio(autorNombre, "inventario.error.autorRequerido");
+        validarTextoObligatorio(descripcion, "inventario.error.descripcionRequerida");
+        validarTextoObligatorio(precioTexto, "inventario.error.precioRequerido");
+        validarTextoObligatorio(editorialNombre, "inventario.error.editorialRequerida");
+        validarTextoObligatorio(isbn, "inventario.error.isbnRequerido");
+        validarTextoObligatorio(ubicacionFisica, "inventario.error.ubicacionRequerida");
+        validarTextoObligatorio(categoriaNombre, "inventario.error.categoriaRequerida");
 
         BigDecimal precio = convertirPrecio(precioTexto);
         validarPrecio(precio);
 
         if (existencias < 0) {
-            throw new IllegalArgumentException("Las existencias no pueden ser negativas.");
+            throw new IllegalArgumentException("inventario.error.existenciasNegativas");
         }
 
         String isbnNormalizado = normalizarIsbn(isbn);
         validarIsbn13(isbnNormalizado);
 
         if (libroRepository.existsByIsbnAndIdLibroNot(isbnNormalizado, idLibro)) {
-            throw new IllegalArgumentException("Ya existe otro libro registrado con ese ISBN.");
+            throw new IllegalArgumentException("inventario.error.isbnDuplicadoOtro");
         }
 
         Autor autor = obtenerOCrearAutor(autorNombre);
@@ -229,6 +225,7 @@ public class LibroService {
 
         libro.setTitulo(titulo.trim());
         libro.setAutor(autor);
+        libro.setDescripcion(descripcion.trim());
         libro.setPrecio(precio);
         libro.setEditorial(editorial);
         libro.setIsbn(isbnNormalizado);
@@ -298,9 +295,22 @@ public class LibroService {
         String valor = precioTexto
                 .replace("₡", "")
                 .replace("¢", "")
-                .replace(" ", "")
-                .replace(".", "")
-                .replace(",", ".");
+                .replace(" ", "");
+
+        int ultimoPunto = valor.lastIndexOf('.');
+        int ultimaComa = valor.lastIndexOf(',');
+
+        if (ultimoPunto >= 0 && ultimaComa >= 0) {
+            char separadorDecimal = ultimoPunto > ultimaComa ? '.' : ',';
+            char separadorMiles = separadorDecimal == '.' ? ',' : '.';
+            valor = valor.replace(String.valueOf(separadorMiles), "");
+
+            if (separadorDecimal == ',') {
+                valor = valor.replace(',', '.');
+            }
+        } else if (ultimaComa >= 0) {
+            valor = valor.replace(',', '.');
+        }
 
         return new BigDecimal(valor);
     }
@@ -313,13 +323,13 @@ public class LibroService {
 
     private void validarImagenObligatoria(MultipartFile imagenFile) {
         if (imagenFile == null || imagenFile.isEmpty()) {
-            throw new IllegalArgumentException("La imagen del libro es obligatoria.");
+            throw new IllegalArgumentException("inventario.error.imagenRequerida");
         }
     }
 
     private void validarPrecio(BigDecimal precio) {
         if (precio == null || precio.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("El precio debe ser mayor a cero.");
+            throw new IllegalArgumentException("inventario.error.precio");
         }
     }
 
@@ -331,7 +341,7 @@ public class LibroService {
 
     private void validarIsbn13(String isbn) {
         if (!isbn.matches("97[89][0-9]{10}")) {
-            throw new IllegalArgumentException("El ISBN debe tener 13 dígitos y comenzar con 978 o 979.");
+            throw new IllegalArgumentException("inventario.error.isbnFormato");
         }
 
         int suma = 0;
@@ -345,7 +355,7 @@ public class LibroService {
         int ultimoDigito = Character.getNumericValue(isbn.charAt(12));
 
         if (digitoControl != ultimoDigito) {
-            throw new IllegalArgumentException("El ISBN ingresado no es válido.");
+            throw new IllegalArgumentException("inventario.error.isbnInvalido");
         }
     }
 

@@ -1,6 +1,770 @@
-<body>
-    <aside th:replace="~{admin/fragmentos :: sidebar('productos')}"></aside>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}">
+    <head th:replace="~{admin/fragmentos :: head('Productos - Administrador')}"></head>
+    <body>
+        <div class="admin-layout">
+            <aside th:replace="~{admin/fragmentos :: sidebar('productos')}"></aside>
 
-    <div>Sí entra</div>
+            <main class="admin-main">
+                <header th:replace="~{admin/fragmentos :: topbar}"></header>
 
-</body>
+                <section class="admin-content products-admin-page">
+                    <style>
+                        .products-admin-page {
+                            min-height: calc(100vh - 82px);
+                        }
+
+                        .products-toolbar {
+                            display: flex;
+                            align-items: flex-end;
+                            justify-content: space-between;
+                            gap: 24px;
+                            margin-bottom: 22px;
+                        }
+
+                        .products-heading h1 {
+                            margin: 0 0 6px;
+                            color: #182230;
+                            font-size: 25px;
+                            font-weight: 600;
+                        }
+
+                        .products-heading p {
+                            margin: 0;
+                            color: #667085;
+                            font-size: 13px;
+                        }
+
+                        .products-search {
+                            width: min(420px, 100%);
+                            height: 42px;
+                            display: flex;
+                            align-items: center;
+                            overflow: hidden;
+                            background: #FFFFFF;
+                            border: 1px solid #D6DCE5;
+                            border-radius: 7px;
+                        }
+
+                        .products-search i {
+                            margin-left: 14px;
+                            color: #98A2B3;
+                        }
+
+                        .products-search input {
+                            min-width: 0;
+                            flex: 1;
+                            height: 100%;
+                            border: 0;
+                            outline: 0;
+                            padding: 0 12px;
+                            color: #344054;
+                            font-size: 13px;
+                        }
+
+                        .products-search button {
+                            align-self: stretch;
+                            border: 0;
+                            padding: 0 18px;
+                            color: #FFFFFF;
+                            background: #0D6EFD;
+                            font-size: 13px;
+                            font-weight: 600;
+                        }
+
+                        .products-message {
+                            margin-bottom: 18px;
+                            padding: 12px 15px;
+                            border-radius: 7px;
+                            font-size: 13px;
+                        }
+
+                        .products-message.success {
+                            border: 1px solid #ABEFC6;
+                            color: #067647;
+                            background: #ECFDF3;
+                        }
+
+                        .products-message.error {
+                            border: 1px solid #FECDCA;
+                            color: #B42318;
+                            background: #FEF3F2;
+                        }
+
+                        .products-panel {
+                            padding: 20px;
+                            background: #FFFFFF;
+                            border: 1px solid #E2E6EC;
+                            border-radius: 9px;
+                        }
+
+                        .products-grid {
+                            display: grid;
+                            grid-template-columns: repeat(4, minmax(0, 1fr));
+                            gap: 22px 18px;
+                        }
+
+                        .product-admin-card {
+                            min-width: 0;
+                            padding-bottom: 14px;
+                            border: 1px solid #E8ECF2;
+                            border-radius: 8px;
+                            overflow: hidden;
+                            background: #FFFFFF;
+                            transition: transform .16s ease, box-shadow .16s ease;
+                        }
+
+                        .product-admin-card:hover {
+                            transform: translateY(-2px);
+                            box-shadow: 0 10px 24px rgba(16, 24, 40, .08);
+                        }
+
+                        .product-cover-box {
+                            position: relative;
+                            min-height: 210px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            padding: 18px;
+                            background: #F7F8FA;
+                        }
+
+                        .product-cover-box img {
+                            width: 120px;
+                            height: 174px;
+                            object-fit: cover;
+                            border-radius: 2px;
+                            box-shadow: 0 5px 12px rgba(16, 24, 40, .16);
+                        }
+
+                        .product-cover-placeholder {
+                            width: 120px;
+                            height: 174px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            padding: 12px;
+                            background: #E8EDF4;
+                            color: #667085;
+                            text-align: center;
+                            font-size: 12px;
+                        }
+
+                        .product-discount-badge {
+                            position: absolute;
+                            top: 12px;
+                            left: 12px;
+                            padding: 5px 8px;
+                            border-radius: 5px;
+                            background: #0B5A91;
+                            color: #FFFFFF;
+                            font-size: 12px;
+                            font-weight: 700;
+                        }
+
+                        .product-status {
+                            position: absolute;
+                            top: 12px;
+                            right: 12px;
+                            padding: 5px 8px;
+                            border-radius: 999px;
+                            background: #EAECF0;
+                            color: #475467;
+                            font-size: 10px;
+                            font-weight: 700;
+                        }
+
+                        .product-status.active {
+                            background: #DCFAE6;
+                            color: #067647;
+                        }
+
+                        .product-status.scheduled {
+                            background: #EFF4FF;
+                            color: #3538CD;
+                        }
+
+                        .product-status.finished {
+                            background: #FEF3F2;
+                            color: #B42318;
+                        }
+
+                        .product-card-body {
+                            padding: 14px 14px 0;
+                        }
+
+                        .product-card-title {
+                            min-height: 36px;
+                            margin: 0 0 4px;
+                            color: #182230;
+                            font-size: 14px;
+                            font-weight: 700;
+                            line-height: 1.3;
+                        }
+
+                        .product-card-author {
+                            min-height: 30px;
+                            margin-bottom: 8px;
+                            color: #667085;
+                            font-size: 11px;
+                            text-transform: uppercase;
+                        }
+
+                        .product-card-price {
+                            display: flex;
+                            align-items: baseline;
+                            flex-wrap: wrap;
+                            gap: 7px;
+                            margin-bottom: 6px;
+                        }
+
+                        .product-card-price strong {
+                            color: #0D6EFD;
+                            font-size: 14px;
+                        }
+
+                        .product-card-price del {
+                            color: #98A2B3;
+                            font-size: 11px;
+                        }
+
+                        .product-card-meta {
+                            display: flex;
+                            justify-content: space-between;
+                            gap: 10px;
+                            margin-bottom: 11px;
+                            color: #667085;
+                            font-size: 11px;
+                        }
+
+                        .product-offer-button {
+                            width: 100%;
+                            min-height: 36px;
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 8px;
+                            border: 1px solid #BFD5F6;
+                            border-radius: 6px;
+                            color: #0D6EFD;
+                            background: #F7FAFF;
+                            text-decoration: none;
+                            font-size: 12px;
+                            font-weight: 600;
+                        }
+
+                        .product-offer-button:hover {
+                            color: #FFFFFF;
+                            background: #0D6EFD;
+                        }
+
+                        .products-empty {
+                            padding: 60px 20px;
+                            color: #667085;
+                            text-align: center;
+                        }
+
+                        .products-pagination {
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            gap: 20px;
+                            margin-top: 22px;
+                            padding-top: 16px;
+                            border-top: 1px solid #EAECF0;
+                        }
+
+                        .products-page-button {
+                            min-width: 92px;
+                            min-height: 36px;
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            border: 1px solid #D0D5DD;
+                            border-radius: 6px;
+                            color: #344054;
+                            background: #FFFFFF;
+                            text-decoration: none;
+                            font-size: 12px;
+                        }
+
+                        .products-page-button.disabled {
+                            pointer-events: none;
+                            opacity: .45;
+                        }
+
+                        .products-page-info {
+                            color: #667085;
+                            font-size: 12px;
+                        }
+
+                        .offer-modal-layer {
+                            position: fixed;
+                            inset: 0;
+                            z-index: 1080;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            padding: 24px;
+                            background: rgba(15, 23, 42, .48);
+                        }
+
+                        .offer-modal {
+                            width: min(680px, 100%);
+                            max-height: calc(100vh - 48px);
+                            overflow-y: auto;
+                            border-radius: 10px;
+                            background: #FFFFFF;
+                            box-shadow: 0 24px 70px rgba(16, 24, 40, .25);
+                        }
+
+                        .offer-modal-header {
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            gap: 16px;
+                            padding: 20px 22px;
+                            border-bottom: 1px solid #EAECF0;
+                        }
+
+                        .offer-modal-header h2 {
+                            margin: 0 0 4px;
+                            color: #182230;
+                            font-size: 19px;
+                        }
+
+                        .offer-modal-header p {
+                            margin: 0;
+                            color: #667085;
+                            font-size: 12px;
+                        }
+
+                        .offer-modal-close {
+                            width: 36px;
+                            height: 36px;
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            border-radius: 50%;
+                            color: #475467;
+                            background: #F2F4F7;
+                            text-decoration: none;
+                        }
+
+                        .offer-book-summary {
+                            display: flex;
+                            align-items: center;
+                            gap: 14px;
+                            margin: 20px 22px 0;
+                            padding: 13px;
+                            border: 1px solid #EAECF0;
+                            border-radius: 8px;
+                            background: #F9FAFB;
+                        }
+
+                        .offer-book-summary img,
+                        .offer-book-image-placeholder {
+                            width: 52px;
+                            height: 72px;
+                            flex: 0 0 52px;
+                            object-fit: cover;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            background: #E8EDF4;
+                            color: #667085;
+                        }
+
+                        .offer-book-summary strong {
+                            display: block;
+                            margin-bottom: 4px;
+                            color: #182230;
+                            font-size: 14px;
+                        }
+
+                        .offer-book-summary span {
+                            display: block;
+                            color: #667085;
+                            font-size: 12px;
+                        }
+
+                        .offer-form {
+                            padding: 20px 22px 6px;
+                        }
+
+                        .offer-form-grid {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 15px;
+                        }
+
+                        .offer-field.full {
+                            grid-column: 1 / -1;
+                        }
+
+                        .offer-field label {
+                            display: block;
+                            margin-bottom: 6px;
+                            color: #344054;
+                            font-size: 12px;
+                            font-weight: 600;
+                        }
+
+                        .offer-field input,
+                        .offer-field textarea {
+                            width: 100%;
+                            border: 1px solid #D0D5DD;
+                            border-radius: 6px;
+                            padding: 10px 11px;
+                            outline: none;
+                            color: #344054;
+                            background: #FFFFFF;
+                            font: 13px Arial, Helvetica, sans-serif;
+                        }
+
+                        .offer-field textarea {
+                            min-height: 72px;
+                            resize: vertical;
+                        }
+
+                        .offer-field input:focus,
+                        .offer-field textarea:focus {
+                            border-color: #0D6EFD;
+                            box-shadow: 0 0 0 3px rgba(13, 110, 253, .1);
+                        }
+
+                        .offer-price-preview {
+                            grid-column: 1 / -1;
+                            display: flex;
+                            justify-content: space-between;
+                            gap: 12px;
+                            padding: 12px 14px;
+                            border-radius: 7px;
+                            background: #EFF6FF;
+                            color: #344054;
+                            font-size: 13px;
+                        }
+
+                        .offer-price-preview strong {
+                            color: #0D6EFD;
+                        }
+
+                        .offer-form-error {
+                            display: none;
+                            grid-column: 1 / -1;
+                            padding: 10px 12px;
+                            border-radius: 6px;
+                            color: #B42318;
+                            background: #FEF3F2;
+                            font-size: 12px;
+                        }
+
+                        .offer-form-error.show {
+                            display: block;
+                        }
+
+                        .offer-modal-actions {
+                            display: flex;
+                            align-items: center;
+                            justify-content: flex-end;
+                            gap: 10px;
+                            padding: 16px 22px 22px;
+                        }
+
+                        .offer-action {
+                            min-height: 39px;
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            border: 1px solid #D0D5DD;
+                            border-radius: 6px;
+                            padding: 0 16px;
+                            color: #344054;
+                            background: #FFFFFF;
+                            text-decoration: none;
+                            font-size: 12px;
+                            font-weight: 600;
+                        }
+
+                        .offer-action.primary {
+                            border-color: #0D6EFD;
+                            color: #FFFFFF;
+                            background: #0D6EFD;
+                        }
+
+                        .offer-action.danger {
+                            border-color: #FDA29B;
+                            color: #B42318;
+                            background: #FFFFFF;
+                        }
+
+                        @media (max-width: 1200px) {
+                            .products-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+                        }
+
+                        @media (max-width: 900px) {
+                            .products-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+                            .products-toolbar { align-items: stretch; flex-direction: column; }
+                        }
+
+                        @media (max-width: 620px) {
+                            .products-grid { grid-template-columns: 1fr; }
+                            .offer-form-grid { grid-template-columns: 1fr; }
+                            .offer-field.full, .offer-price-preview, .offer-form-error { grid-column: 1; }
+                            .offer-modal-actions { align-items: stretch; flex-direction: column-reverse; }
+                            .offer-modal-actions form, .offer-action { width: 100%; }
+                        }
+                    </style>
+
+                    <div class="products-toolbar">
+                        <div class="products-heading">
+                            <h1>[[#{admin.productos.encabezado}]]</h1>
+                            <p>[[#{admin.productos.descripcion}]]</p>
+                        </div>
+
+                        <form th:action="@{/admin/productos}" method="get" class="products-search">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" name="busqueda" th:value="${busqueda}"
+                                   th:placeholder="#{admin.productos.buscarPlaceholder}"/>
+                            <button type="submit">[[#{accion.buscar}]]</button>
+                        </form>
+                    </div>
+
+                    <div th:if="${mensajeOk}" class="products-message success" th:text="${mensajeOk}"></div>
+                    <div th:if="${mensajeError != null and modo != 'oferta'}" class="products-message error" th:text="${mensajeError}"></div>
+
+                    <section class="products-panel">
+                        <div th:if="${paginaProductos.content != null and !paginaProductos.content.empty}"
+                             class="products-grid">
+                            <article th:each="producto : ${paginaProductos.content}" class="product-admin-card">
+                                <div class="product-cover-box">
+                                    <span th:if="${producto.oferta != null and (producto.estadoOferta == 'Activa' or producto.estadoOferta == 'Programada')}"
+                                          class="product-discount-badge">
+                                        -[[${#numbers.formatDecimal(producto.oferta.porcentajeDescuento, 1, 'COMMA', 0, 'POINT')}]]%
+                                    </span>
+
+                                    <span class="product-status"
+                                          th:classappend="${producto.estadoOferta == 'Activa'} ? ' active' : (${producto.estadoOferta == 'Programada'} ? ' scheduled' : (${producto.estadoOferta == 'Finalizada' or producto.estadoOferta == 'Inactiva'} ? ' finished' : ''))"
+                                          th:text="${producto.estadoOferta == 'Activa'} ? #{admin.productos.estado.activa} : (${producto.estadoOferta == 'Programada'} ? #{admin.productos.estado.programada} : (${producto.estadoOferta == 'Finalizada'} ? #{admin.productos.estado.finalizada} : (${producto.estadoOferta == 'Inactiva'} ? #{admin.productos.estado.inactiva} : #{admin.productos.estado.sinOferta})))">Sin oferta</span>
+
+                                    <img th:if="${producto.libro.rutaImagen != null and !producto.libro.rutaImagen.isBlank()}"
+                                         th:src="${producto.libro.rutaImagen}"
+                                         th:alt="${producto.libro.titulo}"/>
+                                    <div th:unless="${producto.libro.rutaImagen != null and !producto.libro.rutaImagen.isBlank()}"
+                                         class="product-cover-placeholder"
+                                         th:text="${producto.libro.titulo}"></div>
+                                </div>
+
+                                <div class="product-card-body">
+                                    <h2 class="product-card-title" th:text="${producto.libro.titulo}"></h2>
+                                    <div class="product-card-author"
+                                         th:text="${producto.libro.autor != null} ? ${producto.libro.autor.nombre} : #{cliente.libro.sinAutor}"></div>
+
+                                    <div class="product-card-price">
+                                        <strong th:if="${producto.oferta == null or (producto.estadoOferta != 'Activa' and producto.estadoOferta != 'Programada')}">
+                                            ₡[[${#numbers.formatDecimal(producto.libro.precio, 1, 'COMMA', 0, 'POINT')}]]
+                                        </strong>
+                                        <strong th:if="${producto.oferta != null and (producto.estadoOferta == 'Activa' or producto.estadoOferta == 'Programada')}">
+                                            ₡[[${#numbers.formatDecimal(producto.oferta.precioOferta, 1, 'COMMA', 0, 'POINT')}]]
+                                        </strong>
+                                        <del th:if="${producto.oferta != null and (producto.estadoOferta == 'Activa' or producto.estadoOferta == 'Programada')}">
+                                            ₡[[${#numbers.formatDecimal(producto.libro.precio, 1, 'COMMA', 0, 'POINT')}]]
+                                        </del>
+                                    </div>
+
+                                    <div class="product-card-meta">
+                                        <span>[[#{admin.productos.stock}]]: [[${producto.libro.existencias}]]</span>
+                                        <span th:text="${producto.libro.categoria != null} ? ${producto.libro.categoria.descripcion} : #{cliente.libro.sinCategoria}"></span>
+                                    </div>
+
+                                    <a class="product-offer-button"
+                                       th:href="@{/admin/productos/oferta(idLibro=${producto.libro.idLibro},page=${paginaProductos.number},busqueda=${busqueda})}">
+                                        <i class="fa-solid fa-tags"></i>
+                                        <span th:text="${producto.oferta == null} ? #{admin.productos.crearOferta} : #{admin.productos.gestionarOferta}"></span>
+                                    </a>
+                                </div>
+                            </article>
+                        </div>
+
+                        <div th:if="${paginaProductos.content == null or paginaProductos.content.empty}"
+                             class="products-empty">
+                            <i class="fa-solid fa-book-open fa-2x mb-3"></i>
+                            <div>[[#{admin.productos.sinResultados}]]</div>
+                        </div>
+
+                        <div class="products-pagination">
+                            <a class="products-page-button"
+                               th:classappend="${paginaProductos.first} ? ' disabled'"
+                               th:href="@{/admin/productos(page=${paginaProductos.number - 1},busqueda=${busqueda})}">
+                                [[#{inventario.anterior}]]
+                            </a>
+
+                            <span class="products-page-info">
+                                [[#{inventario.pagina}]] [[${paginaProductos.number + 1}]] [[#{inventario.de}]] [[${paginaProductos.totalPages == 0 ? 1 : paginaProductos.totalPages}]]
+                            </span>
+
+                            <a class="products-page-button"
+                               th:classappend="${paginaProductos.last} ? ' disabled'"
+                               th:href="@{/admin/productos(page=${paginaProductos.number + 1},busqueda=${busqueda})}">
+                                [[#{inventario.siguiente}]]
+                            </a>
+                        </div>
+                    </section>
+                </section>
+            </main>
+        </div>
+
+        <section th:if="${modo == 'oferta' and libroSeleccionado != null}" class="offer-modal-layer">
+            <div class="offer-modal">
+                <div class="offer-modal-header">
+                    <div>
+                        <h2>[[#{admin.productos.configurarOferta}]]</h2>
+                        <p>[[#{admin.productos.configurarDescripcion}]]</p>
+                    </div>
+                    <a class="offer-modal-close"
+                       th:href="@{/admin/productos(page=${paginaProductos.number},busqueda=${busqueda})}"
+                       th:attr="aria-label=#{accion.cerrar}">
+                        <i class="fa-solid fa-xmark"></i>
+                    </a>
+                </div>
+
+                <div class="offer-book-summary">
+                    <img th:if="${libroSeleccionado.rutaImagen != null and !libroSeleccionado.rutaImagen.isBlank()}"
+                         th:src="${libroSeleccionado.rutaImagen}"
+                         th:alt="${libroSeleccionado.titulo}"/>
+                    <div th:unless="${libroSeleccionado.rutaImagen != null and !libroSeleccionado.rutaImagen.isBlank()}"
+                         class="offer-book-image-placeholder">
+                        <i class="fa-solid fa-book"></i>
+                    </div>
+                    <div>
+                        <strong th:text="${libroSeleccionado.titulo}"></strong>
+                        <span th:text="${libroSeleccionado.autor != null} ? ${libroSeleccionado.autor.nombre} : #{cliente.libro.sinAutor}"></span>
+                        <span>[[#{admin.productos.precioRegular}]]: ₡[[${#numbers.formatDecimal(libroSeleccionado.precio, 1, 'COMMA', 0, 'POINT')}]]</span>
+                    </div>
+                </div>
+
+                <form id="guardarOfertaForm"
+                      th:action="@{/admin/productos/oferta/guardar}"
+                      method="post"
+                      class="offer-form"
+                      th:attr="data-precio-base=${libroSeleccionado.precio},data-locale=${#locale.toLanguageTag()},data-error-fechas=#{admin.productos.error.fechasCliente},data-error-orden=#{admin.productos.error.fechaOrdenCliente}">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" name="idLibro" th:value="${libroSeleccionado.idLibro}"/>
+                    <input type="hidden" name="page" th:value="${paginaProductos.number}"/>
+                    <input type="hidden" name="busqueda" th:value="${busqueda}"/>
+
+                    <div class="offer-form-grid">
+                        <div th:if="${mensajeError}" class="offer-form-error show" th:text="${mensajeError}"></div>
+                        <div class="offer-form-error" id="offerClientError"></div>
+
+                        <div class="offer-field full">
+                            <label for="descripcionOferta">[[#{oferta.descripcion}]]</label>
+                            <textarea id="descripcionOferta" name="descripcion" maxlength="150" required="required"
+                                      th:placeholder="#{admin.productos.descripcionPlaceholder}"
+                                      th:text="${ofertaSeleccionada != null ? ofertaSeleccionada.descripcion : ''}"></textarea>
+                        </div>
+
+                        <div class="offer-field">
+                            <label for="porcentajeOferta">[[#{oferta.descuento}]] (%)</label>
+                            <input id="porcentajeOferta" name="porcentajeDescuento" type="number"
+                                   min="0.01" max="99.99" step="0.01" required="required"
+                                   th:value="${ofertaSeleccionada != null ? ofertaSeleccionada.porcentajeDescuento : 10}"/>
+                        </div>
+
+                        <div class="offer-field">
+                            <label>[[#{admin.productos.existenciasDisponibles}]]</label>
+                            <input type="text" th:value="${libroSeleccionado.existencias}" readonly="readonly"/>
+                        </div>
+
+                        <div class="offer-field">
+                            <label for="fechaInicioOferta">[[#{oferta.fechaInicio}]]</label>
+                            <input id="fechaInicioOferta" name="fechaInicio" type="date"
+                                   required="required" th:value="${fechaInicioFormulario}"/>
+                        </div>
+
+                        <div class="offer-field">
+                            <label for="fechaFinOferta">[[#{admin.productos.fechaFinalizacion}]]</label>
+                            <input id="fechaFinOferta" name="fechaFin" type="date"
+                                   required="required" th:value="${fechaFinFormulario}"/>
+                        </div>
+
+                        <div class="offer-price-preview">
+                            <span>[[#{admin.productos.precioCliente}]]</span>
+                            <strong id="precioOfertaPreview">₡0</strong>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="offer-modal-actions">
+                    <form th:if="${ofertaSeleccionada != null and ofertaSeleccionada.activo}"
+                          th:action="@{/admin/productos/oferta/finalizar}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <input type="hidden" name="idLibro" th:value="${libroSeleccionado.idLibro}"/>
+                        <input type="hidden" name="page" th:value="${paginaProductos.number}"/>
+                        <input type="hidden" name="busqueda" th:value="${busqueda}"/>
+                        <button type="submit" class="offer-action danger">[[#{admin.productos.finalizarOferta}]]</button>
+                    </form>
+
+                    <a class="offer-action"
+                       th:href="@{/admin/productos(page=${paginaProductos.number},busqueda=${busqueda})}">
+                        [[#{accion.cancelar}]]
+                    </a>
+                    <button type="submit" form="guardarOfertaForm" class="offer-action primary">
+                        [[#{admin.productos.guardarOferta}]]
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section th:replace="~{admin/fragmentos :: scripts}"></section>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const formulario = document.getElementById("guardarOfertaForm");
+
+                if (!formulario) return;
+
+                const porcentaje = document.getElementById("porcentajeOferta");
+                const fechaInicio = document.getElementById("fechaInicioOferta");
+                const fechaFin = document.getElementById("fechaFinOferta");
+                const vistaPrecio = document.getElementById("precioOfertaPreview");
+                const error = document.getElementById("offerClientError");
+                const precioBase = Number(formulario.dataset.precioBase || 0);
+                const locale = formulario.dataset.locale || "es-CR";
+
+                function actualizarPrecio() {
+                    const descuento = Number(porcentaje.value || 0);
+                    const precioOferta = precioBase * (1 - descuento / 100);
+                    vistaPrecio.textContent = new Intl.NumberFormat(locale, {
+                        style: "currency",
+                        currency: "CRC",
+                        maximumFractionDigits: 0
+                    }).format(Math.max(precioOferta, 0));
+                }
+
+                porcentaje.addEventListener("input", actualizarPrecio);
+                actualizarPrecio();
+
+                formulario.addEventListener("submit", function (evento) {
+                    error.classList.remove("show");
+                    error.textContent = "";
+
+                    if (!fechaInicio.value || !fechaFin.value) {
+                        evento.preventDefault();
+                        error.textContent = formulario.dataset.errorFechas;
+                        error.classList.add("show");
+                        return;
+                    }
+
+                    if (new Date(fechaFin.value) <= new Date(fechaInicio.value)) {
+                        evento.preventDefault();
+                        error.textContent = formulario.dataset.errorOrden;
+                        error.classList.add("show");
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>

@@ -77,7 +77,7 @@ public class FirebaseStorageService {
         String tipoContenido = archivo.getContentType();
 
         if (tipoContenido == null || !tipoContenido.startsWith("image/")) {
-            throw new IllegalArgumentException("El archivo debe ser una imagen.");
+            throw new IllegalArgumentException("archivo.error.debeSerImagen");
         }
     }
 
