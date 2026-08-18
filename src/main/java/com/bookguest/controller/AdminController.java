@@ -31,23 +31,4 @@ public class AdminController {
         return "admin/dashboard";
     }
 
-    @GetMapping("/admin/configuracion")
-    public String configuracion() {
-        return "admin/configuracion";
-    }
-
-    @GetMapping("/admin/usuarios")
-    public String usuarios() {
-        return "admin/usuarios";
-    }
-
-    @GetMapping("/admin/pedidos")
-    public String pedidos() {
-        return "admin/pedidos";
-    }
-
-    @GetMapping("/admin/productos")
-    public String productos() {
-        return "admin/productos";
-    }
 }

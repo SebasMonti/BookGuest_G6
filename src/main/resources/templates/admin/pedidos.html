@@ -1,6 +1,414 @@
-<body>
-    <aside th:replace="~{admin/fragmentos :: sidebar('pedidos')}"></aside>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}">
+    <head th:replace="~{admin/fragmentos :: head(#{admin.pedidos.titulo})}"></head>
+    <body>
+        <main class="admin-layout">
+            <aside th:replace="~{admin/fragmentos :: sidebar('pedidos')}"></aside>
+            <section class="admin-main">
+                <header th:replace="~{admin/fragmentos :: topbar}"></header>
+                <div class="admin-content">
+                    <style>
+                        .orders-summary-card { padding: 20px 18px 14px; margin-bottom: 18px; }
+                        .orders-section-title { margin: 0; color: #344054; font-size: 16px; font-weight: 500; }
+                        .orders-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 20px; }
+                        .orders-summary-item { min-height: 76px; padding: 0 28px 0 0; margin-right: 28px; border-right: 1px solid #E2E6EC; }
+                        .orders-summary-item:last-child { padding-right: 0; margin-right: 0; border-right: 0; }
+                        .orders-summary-label { margin-bottom: 10px; color: #0D6EFD; font-size: 13px; font-weight: 600; }
+                        .orders-summary-label.orange { color: #E58A00; }
+                        .orders-summary-label.purple { color: #7C3AED; }
+                        .orders-summary-label.red { color: #EF4444; }
+                        .orders-summary-value { margin-bottom: 6px; color: #344054; font-size: 15px; }
+                        .orders-summary-caption { color: #98A2B3; font-size: 11px; }
+                        .orders-list-card { padding: 16px 18px 14px; }
+                        .orders-card-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 10px; }
+                        .orders-actions { display: flex; align-items: center; justify-content: flex-end; gap: 9px; flex-wrap: wrap; }
+                        .orders-btn-primary, .orders-btn-secondary { min-height: 38px; padding: 9px 15px; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; line-height: 1; text-decoration: none; cursor: pointer; }
+                        .orders-btn-primary { border: 1px solid #0D6EFD; background-color: #0D6EFD; color: #FFFFFF; }
+                        .orders-btn-primary:hover { border-color: #0B5ED7; background-color: #0B5ED7; color: #FFFFFF; }
+                        .orders-btn-secondary { border: 1px solid #D0D5DD; background-color: #FFFFFF; color: #536072; }
+                        .orders-btn-secondary:hover { background-color: #F9FAFB; color: #344054; }
+                        .orders-btn-secondary.disabled { opacity: 0.45; pointer-events: none; }
+                        .orders-filter-box { margin-bottom: 14px; padding: 15px; border: 1px solid #E2E6EC; border-radius: 6px; background-color: #F9FAFB; }
+                        .orders-filter-grid { display: grid; grid-template-columns: minmax(240px, 1.6fr) minmax(170px, 0.7fr) auto; align-items: end; gap: 12px; }
+                        .orders-filter-group label { display: block; margin-bottom: 6px; color: #536072; font-size: 11px; }
+                        .orders-filter-group input, .orders-filter-group select { width: 100%; min-height: 38px; padding: 8px 11px; border: 1px solid #D0D5DD; border-radius: 5px; outline: 0; background-color: #FFFFFF; color: #344054; font-size: 12px; }
+                        .orders-filter-actions { display: flex; gap: 8px; }
+                        .orders-table { width: 100%; margin: 0; font-size: 11px; }
+                        .orders-table th { padding: 11px 9px; border-bottom: 1px solid #E2E6EC; color: #667085; font-weight: 500; white-space: nowrap; }
+                        .orders-table td { padding: 11px 9px; border-bottom: 1px solid #E2E6EC; color: #344054; vertical-align: middle; white-space: nowrap; }
+                        .orders-table td.orders-book-cell { width: 260px; max-width: 260px; white-space: normal; line-height: 1.25; }
+                        .orders-book-single { color: #344054; }
+                        .orders-books-compact { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
+                        .orders-products-count { display: inline-flex; align-items: center; gap: 5px; padding: 3px 7px; border-radius: 10px; background-color: #EEF4FF; color: #175CD3; font-size: 10px; font-weight: 600; white-space: nowrap; }
+                        .orders-products-preview { width: 100%; overflow: hidden; display: -webkit-box; color: #536072; font-size: 10px; line-height: 1.3; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+                        .orders-check { width: 15px; height: 15px; accent-color: #344054; cursor: pointer; }
+                        .orders-status { font-weight: 500; }
+                        .orders-status.abierto { color: #0D6EFD; }
+                        .orders-status.en-entrega { color: #F79009; }
+                        .orders-status.entregado { color: #0D6EFD; }
+                        .orders-status.cancelado { color: #F04438; }
+                        .orders-empty { padding: 30px; color: #667085; font-size: 13px; text-align: center; }
+                        .orders-pagination { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding-top: 14px; }
+                        .orders-page-info { color: #667085; font-size: 11px; }
+                        .orders-modal-layer { position: fixed; inset: 0; z-index: 1200; padding: 24px; display: flex; align-items: center; justify-content: center; overflow-y: auto; background-color: rgba(15, 23, 42, 0.34); }
+                        .orders-modal { width: min(100%, 1010px); max-height: 94vh; padding: 22px 18px 20px; overflow-y: auto; border-radius: 7px; background-color: #FFFFFF; box-shadow: 0 18px 50px rgba(15, 23, 42, 0.16); }
+                        .orders-modal-title { margin: 0 0 12px; color: #344054; font-size: 17px; font-weight: 500; }
+                        .orders-modal-subtitle { margin: 12px 0 10px; color: #344054; font-size: 16px; font-weight: 500; }
+                        .orders-data-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+                        .orders-grid-span-two { grid-column: span 2; }
+                        .orders-products-group { grid-column: 1 / -1; }
+                        .orders-products-list { max-height: 144px; overflow-y: auto; border: 1px solid #D0D5DD; border-radius: 6px; background-color: #F9FAFB; }
+                        .orders-product-row { min-height: 42px; padding: 8px 11px; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; align-items: center; gap: 9px; border-bottom: 1px solid #E2E6EC; }
+                        .orders-product-row:last-child { border-bottom: 0; }
+                        .orders-product-icon { color: #0D6EFD; text-align: center; }
+                        .orders-product-title { min-width: 0; overflow-wrap: anywhere; color: #344054; font-size: 12px; line-height: 1.3; }
+                        .orders-product-quantity { padding: 4px 8px; border-radius: 10px; background-color: #EEF4FF; color: #175CD3; font-size: 10px; font-weight: 600; white-space: nowrap; }
+                        .orders-update-grid { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr) auto; align-items: start; gap: 12px; }
+                        .orders-form-group label { display: block; margin-bottom: 5px; color: #344054; font-size: 11px; }
+                        .orders-form-group input, .orders-form-group select { width: 100%; min-height: 38px; padding: 8px 11px; border: 1px solid #D0D5DD; border-radius: 5px; outline: 0; background-color: #FFFFFF; color: #536072; font-size: 12px; }
+                        .orders-form-group input[readonly] { background-color: #FFFFFF; }
+                        .orders-form-group select:focus { border-color: #0D6EFD; box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.10); }
+                        .orders-modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+                        .orders-update-grid > .orders-modal-actions { padding-top: 16px; }
+                        .orders-error { margin-top: 8px; color: #F04438; font-size: 11px; }
+                        .orders-success { padding-top: 27px; color: #0D6EFD; font-size: 12px; }
 
-    <div>Sí entra</div>
+                        @media (max-width: 1050px) {
+                            .orders-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 0; }
+                            .orders-summary-item:nth-child(2) { border-right: 0; }
+                            .orders-filter-grid { grid-template-columns: 1fr 1fr; }
+                            .orders-filter-actions { grid-column: 1 / -1; }
+                        }
 
-</body>
+                        @media (max-width: 760px) {
+                            .orders-summary { grid-template-columns: 1fr; }
+                            .orders-summary-item { padding: 10px 0; margin: 0; border-right: 0; border-bottom: 1px solid #E2E6EC; }
+                            .orders-summary-item:last-child { border-bottom: 0; }
+                            .orders-card-header { align-items: stretch; flex-direction: column; }
+                            .orders-actions { justify-content: flex-start; }
+                            .orders-filter-grid, .orders-data-grid, .orders-update-grid { grid-template-columns: 1fr; }
+                            .orders-grid-span-two, .orders-products-group { grid-column: auto; }
+                            .orders-filter-actions { grid-column: auto; }
+                            .orders-modal-actions { justify-content: flex-start; }
+                            .orders-update-grid > .orders-modal-actions, .orders-success { padding-top: 0; }
+                        }
+                    </style>
+
+                    <section class="admin-card orders-summary-card">
+                        <h1 class="orders-section-title">[[#{pedidos.resumen}]]</h1>
+                        <div class="orders-summary">
+                            <article class="orders-summary-item">
+                                <div class="orders-summary-label">[[#{pedidos.total}]]</div>
+                                <div class="orders-summary-value" th:text="${totalPedidos}">0</div>
+                                <div class="orders-summary-caption">[[#{pedidos.registrados}]]</div>
+                            </article>
+                            <article class="orders-summary-item">
+                                <div class="orders-summary-label orange">[[#{pedidos.recibidos}]]</div>
+                                <div class="orders-summary-value" th:text="${pedidosRecibidos}">0</div>
+                                <div class="orders-summary-caption">[[#{pedidos.ultimosSieteDias}]]</div>
+                            </article>
+                            <article class="orders-summary-item">
+                                <div class="orders-summary-label purple">[[#{pedidos.entregados}]]</div>
+                                <div class="orders-summary-value" th:text="${pedidosEntregados}">0</div>
+                                <div class="orders-summary-caption">[[#{pedidos.ultimosSieteDias}]]</div>
+                            </article>
+                            <article class="orders-summary-item">
+                                <div class="orders-summary-label red">[[#{pedidos.enEntrega}]]</div>
+                                <div class="orders-summary-value" th:text="${pedidosEnEntrega}">0</div>
+                                <div class="orders-summary-caption">[[#{pedidos.pedidos}]]</div>
+                            </article>
+                        </div>
+                    </section>
+                    <section class="admin-card orders-list-card">
+                        <div class="orders-card-header">
+                            <h2 class="orders-section-title">[[#{pedidos.tituloListado}]]</h2>
+                            <div class="orders-actions" th:if="${modo == 'lista'}">
+                                <a class="orders-btn-secondary"
+                                   th:href="@{/admin/pedidos(page=${paginaPedidos.number},busqueda=${busqueda},estado=${estadoFiltro},mostrarFiltros=${!mostrarFiltros})}">
+                                    <i class="fa-solid fa-filter"></i>
+                                    [[#{pedidos.filtros}]]
+                                </a>
+                                <a class="orders-btn-primary" th:href="@{/admin/pedidos/seleccionar(page=${paginaPedidos.number},busqueda=${busqueda},estado=${estadoFiltro})}">
+                                    <i class="fa-solid fa-pen"></i>
+                                    [[#{pedidos.modificarEstado}]]
+                                </a>
+                            </div>
+                            <div class="orders-actions" th:unless="${modo == 'lista'}">
+                                <a class="orders-btn-secondary" th:href="@{/admin/pedidos(page=${paginaPedidos.number},busqueda=${busqueda},estado=${estadoFiltro})}">
+                                    <i class="fa-regular fa-circle-xmark"></i>
+                                    [[#{accion.cancelar}]]
+                                </a>
+                                <button type="button"
+                                        class="orders-btn-primary"
+                                        id="botonModificarPedido"
+                                        th:attr="data-url=@{/admin/pedidos/modificar(page=${paginaPedidos.number},busqueda=${busqueda},estado=${estadoFiltro})}"
+                                        onclick="modificarPedidoSeleccionado()">
+                                    <i class="fa-solid fa-pen"></i>
+                                    [[#{pedidos.modificarEstado}]]
+                                </button>
+                            </div>
+                        </div>
+                        <form th:if="${mostrarFiltros and modo == 'lista'}" th:action="@{/admin/pedidos}" method="get" class="orders-filter-box">
+                            <input type="hidden" name="mostrarFiltros" value="true"/>
+                            <div class="orders-filter-grid">
+                                <div class="orders-filter-group">
+                                    <label for="busquedaPedido">[[#{pedidos.buscar}]]</label>
+                                    <input id="busquedaPedido" type="text" name="busqueda" th:value="${busqueda}" th:placeholder="#{pedidos.buscarPlaceholder}"/>
+                                </div>
+                                <div class="orders-filter-group">
+                                    <label for="estadoPedido">[[#{pedidos.estado}]]</label>
+                                    <select id="estadoPedido" name="estado">
+                                        <option value="">[[#{pedidos.todos}]]</option>
+                                        <option value="abierto" th:selected="${estadoFiltro == 'abierto'}">[[#{pedidos.estado.abierto}]]</option>
+                                        <option value="en-entrega" th:selected="${estadoFiltro == 'en-entrega'}">[[#{pedidos.estado.enEntrega}]]</option>
+                                        <option value="entregado" th:selected="${estadoFiltro == 'entregado'}">[[#{pedidos.estado.entregado}]]</option>
+                                        <option value="cancelado" th:selected="${estadoFiltro == 'cancelado'}">[[#{pedidos.estado.cancelado}]]</option>
+                                    </select>
+                                </div>
+                                <div class="orders-filter-actions">
+                                    <a class="orders-btn-secondary" th:href="@{/admin/pedidos(mostrarFiltros=true)}">[[#{pedidos.limpiar}]]</a>
+                                    <button class="orders-btn-primary" type="submit">[[#{pedidos.aplicar}]]</button>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="table-responsive">
+                            <table class="orders-table">
+                                <thead>
+                                    <tr>
+                                        <th th:unless="${modo == 'lista'}"></th>
+                                        <th>[[#{pedidos.numeroOrden}]]</th>
+                                        <th>[[#{pedidos.libro}]]</th>
+                                        <th>[[#{pedidos.precioUnitario}]]</th>
+                                        <th>[[#{pedidos.cantidad}]]</th>
+                                        <th>[[#{pedidos.totalColumna}]]</th>
+                                        <th th:if="${modo == 'lista'}">[[#{pedidos.fechaEntrega}]]</th>
+                                        <th th:unless="${modo == 'lista'}">[[#{pedidos.idCliente}]]</th>
+                                        <th>[[#{pedidos.estado}]]</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="pedido : ${paginaPedidos.content}">
+                                        <td th:unless="${modo == 'lista'}">
+                                            <input type="checkbox" class="orders-check" name="idPedidoSeleccionado" th:value="${pedido.idPedido}" onchange="seleccionarPedidoUnico(this)"/>
+                                        </td>
+                                        <td th:text="${pedido.numeroOrden}">ORD-1001</td>
+                                        <td class="orders-book-cell">
+                                            <span th:unless="${pedido.variosProductos}" class="orders-book-single" th:text="${pedido.libros}">Libro</span>
+                                            <div th:if="${pedido.variosProductos}" class="orders-books-compact">
+                                                <span class="orders-products-count">
+                                                    <i class="fa-solid fa-book"></i>
+                                                    <span th:text="${pedido.cantidadProductos}">2</span>
+                                                    <span>[[#{pedidos.productosMinuscula}]]</span>
+                                                </span>
+                                                <span class="orders-products-preview" th:text="${pedido.libros}" th:title="${pedido.libros}">Libro uno, libro dos</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span th:if="${pedido.variosProductos}">[[#{pedidos.varios}]]</span>
+                                            <span th:unless="${pedido.variosProductos}">₡[[${#numbers.formatDecimal(pedido.precioUnitario, 1, 'COMMA', 0, 'POINT')}]]</span>
+                                        </td>
+                                        <td th:text="${#numbers.formatInteger(pedido.cantidad, 2)}">01</td>
+                                        <td>₡[[${#numbers.formatDecimal(pedido.total, 1, 'COMMA', 0, 'POINT')}]]</td>
+                                        <td th:if="${modo == 'lista'}" th:text="${pedido.fechaEntregaEstimada != null ? #temporals.format(pedido.fechaEntregaEstimada, 'dd/MM/yyyy') : '-'}"></td>
+                                        <td th:unless="${modo == 'lista'}" th:text="${pedido.idCliente != null ? pedido.idCliente : '-'}"></td>
+                                        <td>
+                                            <span class="orders-status"
+                                                  th:classappend="${pedido.estadoCodigo}"
+                                                  th:text="#{__${pedido.estado}__}">Abierto</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div th:if="${paginaPedidos.content == null or paginaPedidos.content.empty}" class="orders-empty">
+                                [[#{pedidos.sinRegistros}]]
+                            </div>
+                        </div>
+                        <div class="orders-pagination">
+                            <a class="orders-btn-secondary"
+                               th:classappend="${paginaPedidos.first} ? ' disabled'"
+                               th:href="${modo == 'lista'} ? @{/admin/pedidos(page=${paginaPedidos.number - 1},busqueda=${busqueda},estado=${estadoFiltro})} : @{/admin/pedidos/seleccionar(page=${paginaPedidos.number - 1},busqueda=${busqueda},estado=${estadoFiltro})}">
+                                [[#{pedidos.anterior}]]
+                            </a>
+                            <span class="orders-page-info">
+                                [[#{pedidos.pagina}]] <span th:text="${paginaPedidos.number + 1}">1</span> [[#{pedidos.de}]]
+                                <span th:text="${paginaPedidos.totalPages == 0 ? 1 : paginaPedidos.totalPages}">1</span>
+                            </span>
+                            <a class="orders-btn-secondary"
+                               th:classappend="${paginaPedidos.last} ? ' disabled'"
+                               th:href="${modo == 'lista'} ? @{/admin/pedidos(page=${paginaPedidos.number + 1},busqueda=${busqueda},estado=${estadoFiltro})} : @{/admin/pedidos/seleccionar(page=${paginaPedidos.number + 1},busqueda=${busqueda},estado=${estadoFiltro})}">
+                                [[#{pedidos.siguiente}]]
+                            </a>
+                        </div>
+                    </section>
+                </div>
+            </section>
+        </main>
+        <section th:if="${modo == 'modificar' and pedidoSeleccionado != null}" class="orders-modal-layer">
+            <form th:action="@{/admin/pedidos/actualizar}"
+                  method="post"
+                  class="orders-modal"
+                  id="formularioEstadoPedido"
+                  th:attr="data-estado-actual=${pedidoSeleccionado.estadoCodigo}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="idPedido" th:value="${pedidoSeleccionado.idPedido}"/>
+                <input type="hidden" name="page" th:value="${paginaPedidos.number}"/>
+                <input type="hidden" name="busqueda" th:value="${busqueda}"/>
+                <input type="hidden" name="estado" th:value="${estadoFiltro}"/>
+                <h2 class="orders-modal-title">[[#{pedidos.datosPedido}]]</h2>
+                <div class="orders-data-grid">
+                    <div class="orders-form-group"><label>[[#{pedidos.numeroOrden}]]</label><input type="text" th:value="${pedidoSeleccionado.numeroOrden}" readonly="readonly"/></div>
+                    <div class="orders-form-group"><label>[[#{pedidos.idCliente}]]</label><input type="text" th:value="${pedidoSeleccionado.idCliente}" readonly="readonly"/></div>
+                    <div class="orders-form-group"><label>[[#{pedidos.nombreCliente}]]</label><input type="text" th:value="${pedidoSeleccionado.nombreCliente}" readonly="readonly"/></div>
+                    <div class="orders-form-group orders-grid-span-two"><label>[[#{pedidos.email}]]</label><input type="text" th:value="${pedidoSeleccionado.emailCliente}" readonly="readonly"/></div>
+                    <div class="orders-form-group"><label>[[#{pedidos.totalPedido}]]</label><input type="text" th:value="|₡${#numbers.formatDecimal(pedidoSeleccionado.total, 1, 'COMMA', 0, 'POINT')}|" readonly="readonly"/></div>
+                    <div class="orders-form-group orders-products-group">
+                        <label>[[#{pedidos.productos}]]</label>
+                        <div class="orders-products-list">
+                            <div th:each="producto : ${pedidoSeleccionado.productos}" class="orders-product-row">
+                                <i class="fa-solid fa-book orders-product-icon"></i>
+                                <span class="orders-product-title" th:text="${producto.titulo}">Libro</span>
+                                <span class="orders-product-quantity">
+                                    [[#{pedidos.cantidadEtiqueta}]]:
+                                    <span th:text="${producto.cantidad}">1</span>
+                                </span>
+                            </div>
+                            <div th:if="${pedidoSeleccionado.productos.empty}" class="orders-product-row">
+                                <i class="fa-solid fa-book orders-product-icon"></i>
+                                <span class="orders-product-title">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h3 class="orders-modal-subtitle">[[#{pedidos.actualizarEstado}]]</h3>
+                <div class="orders-update-grid">
+                    <div class="orders-form-group">
+                        <label>[[#{pedidos.estadoActual}]]</label>
+                        <input type="text" th:value="#{__${pedidoSeleccionado.estado}__}" readonly="readonly"/>
+                    </div>
+                    <div class="orders-form-group">
+                        <label for="nuevoEstado">[[#{pedidos.nuevoEstado}]]</label>
+                        <select id="nuevoEstado" name="nuevoEstado" required="required">
+                            <option value="">[[#{pedidos.seleccionarEstado}]]</option>
+                            <option value="abierto">[[#{pedidos.estado.abierto}]]</option>
+                            <option value="en-entrega">[[#{pedidos.estado.enEntrega}]]</option>
+                            <option value="entregado">[[#{pedidos.estado.entregado}]]</option>
+                            <option value="cancelado">[[#{pedidos.estado.cancelado}]]</option>
+                        </select>
+                        <div class="orders-error" id="errorEstadoPedido" th:text="${mensajeError}"></div>
+                    </div>
+                    <div class="orders-modal-actions">
+                        <a class="orders-btn-primary" th:href="@{/admin/pedidos/seleccionar(page=${paginaPedidos.number},busqueda=${busqueda},estado=${estadoFiltro})}">[[#{accion.cancelar}]]</a>
+                        <button type="submit" class="orders-btn-primary">[[#{pedidos.confirmarCambios}]]</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+        <section th:if="${modo == 'confirmacion' and pedidoSeleccionado != null}" class="orders-modal-layer">
+            <div class="orders-modal">
+                <h2 class="orders-modal-title">[[#{pedidos.datosPedido}]]</h2>
+                <div class="orders-data-grid">
+                    <div class="orders-form-group"><label>[[#{pedidos.numeroOrden}]]</label><input type="text" th:value="${pedidoSeleccionado.numeroOrden}" readonly="readonly"/></div>
+                    <div class="orders-form-group"><label>[[#{pedidos.idCliente}]]</label><input type="text" th:value="${pedidoSeleccionado.idCliente}" readonly="readonly"/></div>
+                    <div class="orders-form-group"><label>[[#{pedidos.nombreCliente}]]</label><input type="text" th:value="${pedidoSeleccionado.nombreCliente}" readonly="readonly"/></div>
+                    <div class="orders-form-group orders-grid-span-two"><label>[[#{pedidos.email}]]</label><input type="text" th:value="${pedidoSeleccionado.emailCliente}" readonly="readonly"/></div>
+                    <div class="orders-form-group"><label>[[#{pedidos.totalPedido}]]</label><input type="text" th:value="|₡${#numbers.formatDecimal(pedidoSeleccionado.total, 1, 'COMMA', 0, 'POINT')}|" readonly="readonly"/></div>
+                    <div class="orders-form-group orders-products-group">
+                        <label>[[#{pedidos.productos}]]</label>
+                        <div class="orders-products-list">
+                            <div th:each="producto : ${pedidoSeleccionado.productos}" class="orders-product-row">
+                                <i class="fa-solid fa-book orders-product-icon"></i>
+                                <span class="orders-product-title" th:text="${producto.titulo}">Libro</span>
+                                <span class="orders-product-quantity">
+                                    [[#{pedidos.cantidadEtiqueta}]]:
+                                    <span th:text="${producto.cantidad}">1</span>
+                                </span>
+                            </div>
+                            <div th:if="${pedidoSeleccionado.productos.empty}" class="orders-product-row">
+                                <i class="fa-solid fa-book orders-product-icon"></i>
+                                <span class="orders-product-title">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h3 class="orders-modal-subtitle">[[#{pedidos.actualizarEstado}]]</h3>
+                <div class="orders-update-grid">
+                    <div class="orders-form-group">
+                        <label>[[#{pedidos.estadoActual}]]</label>
+                        <input type="text" th:value="#{__${pedidoSeleccionado.estado}__}" readonly="readonly"/>
+                    </div>
+                    <div class="orders-success">
+                        <i class="fa-solid fa-check"></i>
+                        [[#{pedidos.actualizadoCorrectamente}]]
+                    </div>
+                    <div class="orders-modal-actions">
+                        <a class="orders-btn-primary" th:href="@{/admin/pedidos(page=${paginaPedidos.number},busqueda=${busqueda},estado=${estadoFiltro})}">[[#{accion.regresar}]]</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section th:replace="~{admin/fragmentos :: scripts}"></section>
+
+        <script th:inline="javascript">
+            const mensajesPedidos = {
+                seleccionar: /*[[#{pedidos.js.seleccionar}]]*/ "",
+                estadoRequerido: /*[[#{pedidos.js.estadoRequerido}]]*/ "",
+                estadoIgual: /*[[#{pedidos.js.estadoIgual}]]*/ ""
+            };
+
+            function seleccionarPedidoUnico(elemento) {
+                document.querySelectorAll("input[name='idPedidoSeleccionado']").forEach(function (check) {
+                    if (check !== elemento) {
+                        check.checked = false;
+                    }
+                });
+            }
+
+            function modificarPedidoSeleccionado() {
+                const seleccionado = document.querySelector("input[name='idPedidoSeleccionado']:checked");
+
+                if (!seleccionado) {
+                    alert(mensajesPedidos.seleccionar);
+                    return;
+                }
+
+                const boton = document.getElementById("botonModificarPedido");
+                const url = new URL(boton.dataset.url, window.location.origin);
+                url.searchParams.set("idPedido", seleccionado.value);
+                window.location.href = url.toString();
+            }
+
+            document.addEventListener("DOMContentLoaded", function () {
+                const formulario = document.getElementById("formularioEstadoPedido");
+
+                if (!formulario) {
+                    return;
+                }
+
+                const selector = document.getElementById("nuevoEstado");
+                const error = document.getElementById("errorEstadoPedido");
+
+                selector.addEventListener("change", function () {
+                    error.textContent = "";
+                });
+
+                formulario.addEventListener("submit", function (event) {
+                    if (!selector.value) {
+                        event.preventDefault();
+                        error.textContent = mensajesPedidos.estadoRequerido;
+                        selector.focus();
+                        return;
+                    }
+
+                    if (selector.value === formulario.dataset.estadoActual) {
+                        event.preventDefault();
+                        error.textContent = mensajesPedidos.estadoIgual;
+                        selector.focus();
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>

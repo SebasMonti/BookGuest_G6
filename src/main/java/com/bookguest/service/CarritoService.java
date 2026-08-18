@@ -20,26 +20,48 @@ public class CarritoService {
     private final CarritoDetalleRepository carritoDetalleRepository;
     private final UsuarioRepository usuarioRepository;
     private final LibroRepository libroRepository;
+    private final OfertaService ofertaService;
 
     public CarritoService(CarritoRepository carritoRepository,
             CarritoDetalleRepository carritoDetalleRepository,
             UsuarioRepository usuarioRepository,
-            LibroRepository libroRepository) {
+            LibroRepository libroRepository,
+            OfertaService ofertaService) {
         this.carritoRepository = carritoRepository;
         this.carritoDetalleRepository = carritoDetalleRepository;
         this.usuarioRepository = usuarioRepository;
         this.libroRepository = libroRepository;
+        this.ofertaService = ofertaService;
     }
 
-    @Transactional
-    public Carrito getCarritoActivo(String email) {
+    private Carrito getCarritoActivo(String email) {
         return carritoRepository.findByUsuarioEmailAndActivoTrue(email)
                 .orElseGet(() -> crearCarrito(email));
     }
 
+    @Transactional
     public List<CarritoDetalle> getDetallesCarrito(String email) {
         Carrito carrito = getCarritoActivo(email);
-        return carritoDetalleRepository.findByCarritoOrderByIdCarritoDetalleAsc(carrito);
+        List<CarritoDetalle> detalles = carritoDetalleRepository
+                .findByCarritoOrderByIdCarritoDetalleAsc(carrito);
+        boolean precioActualizado = false;
+
+        for (CarritoDetalle detalle : detalles) {
+            BigDecimal precioVenta = ofertaService.getPrecioVenta(detalle.getLibro());
+
+            if (precioVenta != null
+                    && (detalle.getPrecioUnitario() == null
+                    || detalle.getPrecioUnitario().compareTo(precioVenta) != 0)) {
+                detalle.setPrecioUnitario(precioVenta);
+                precioActualizado = true;
+            }
+        }
+
+        if (precioActualizado) {
+            carritoDetalleRepository.saveAll(detalles);
+        }
+
+        return detalles;
     }
 
     public BigDecimal getSubtotalCarrito(String email) {
@@ -63,6 +85,7 @@ public class CarritoService {
         CarritoDetalle detalle = carritoDetalleRepository
                 .findByCarritoAndLibroIdLibro(carrito, idLibro)
                 .orElse(null);
+        BigDecimal precioVenta = ofertaService.getPrecioVenta(libro);
 
         if (detalle == null) {
             validarCantidadDisponible(libro, cantidadSolicitada);
@@ -71,11 +94,12 @@ public class CarritoService {
             detalle.setCarrito(carrito);
             detalle.setLibro(libro);
             detalle.setCantidad(cantidadSolicitada);
-            detalle.setPrecioUnitario(libro.getPrecio());
+            detalle.setPrecioUnitario(precioVenta);
         } else {
             int nuevaCantidad = detalle.getCantidad() + cantidadSolicitada;
             validarCantidadDisponible(libro, nuevaCantidad);
             detalle.setCantidad(nuevaCantidad);
+            detalle.setPrecioUnitario(precioVenta);
         }
 
         carritoDetalleRepository.save(detalle);
@@ -92,12 +116,14 @@ public class CarritoService {
 
         Libro libro = obtenerLibroValido(idLibro);
         validarCantidadDisponible(libro, cantidad);
+        BigDecimal precioVenta = ofertaService.getPrecioVenta(libro);
 
         CarritoDetalle detalle = carritoDetalleRepository
                 .findByCarritoAndLibroIdLibro(carrito, idLibro)
-                .orElseThrow(() -> new IllegalArgumentException("El libro no existe en el carrito."));
+                .orElseThrow(() -> new IllegalArgumentException("carrito.error.libroNoCarrito"));
 
         detalle.setCantidad(cantidad);
+        detalle.setPrecioUnitario(precioVenta);
         carritoDetalleRepository.save(detalle);
     }
 
@@ -107,16 +133,9 @@ public class CarritoService {
         carritoDetalleRepository.deleteByCarritoAndLibroIdLibro(carrito, idLibro);
     }
 
-    @Transactional
-    public void vaciarCarrito(String email) {
-        Carrito carrito = getCarritoActivo(email);
-        List<CarritoDetalle> detalles = carritoDetalleRepository.findByCarritoOrderByIdCarritoDetalleAsc(carrito);
-        carritoDetalleRepository.deleteAll(detalles);
-    }
-
     private Carrito crearCarrito(String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado."));
+                .orElseThrow(() -> new IllegalArgumentException("carrito.error.usuarioNoExiste"));
 
         Carrito carrito = new Carrito();
         carrito.setUsuario(usuario);
@@ -127,14 +146,14 @@ public class CarritoService {
 
     private Libro obtenerLibroValido(Long idLibro) {
         Libro libro = libroRepository.findById(idLibro)
-                .orElseThrow(() -> new IllegalArgumentException("Libro no encontrado."));
+                .orElseThrow(() -> new IllegalArgumentException("carrito.error.libroNoExiste"));
 
         if (!libro.isActivo()) {
-            throw new IllegalArgumentException("El libro no se encuentra activo.");
+            throw new IllegalArgumentException("carrito.error.libroInactivo");
         }
 
         if (libro.getExistencias() <= 0) {
-            throw new IllegalArgumentException("El libro no tiene existencias disponibles.");
+            throw new IllegalArgumentException("carrito.error.sinExistencias");
         }
 
         return libro;
@@ -142,11 +161,11 @@ public class CarritoService {
 
     private void validarCantidadDisponible(Libro libro, int cantidad) {
         if (cantidad < 1) {
-            throw new IllegalArgumentException("La cantidad debe ser mayor a cero.");
+            throw new IllegalArgumentException("carrito.error.cantidadPositiva");
         }
 
         if (cantidad > libro.getExistencias()) {
-            throw new IllegalArgumentException("La cantidad solicitada supera las existencias disponibles.");
+            throw new IllegalArgumentException("carrito.error.stockInsuficiente");
         }
     }
 }
