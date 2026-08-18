@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}">
+
+    <head th:replace="~{cliente/fragmentos :: head(#{cliente.factura.titulo})}"></head>
+
+    <body>
+        <header th:replace="~{cliente/fragmentos :: header('carrito')}"></header>
+
+        <main class="client-page checkout-page">
+            <style>
+                .checkout-page {
+                    padding-top: 48px;
+                    padding-bottom: 58px;
+                }
+
+                .checkout-title {
+                    font-size: clamp(26px, 3vw, 36px);
+                    font-weight: 600;
+                    margin-bottom: 42px;
+                    color: #111827;
+                }
+
+                .checkout-layout {
+                    display: grid;
+                    grid-template-columns: minmax(300px, 420px) minmax(420px, 1fr);
+                    gap: clamp(56px, 10vw, 150px);
+                    align-items: start;
+                }
+
+                .checkout-fields {
+                    display: grid;
+                    gap: 16px;
+                }
+
+                .checkout-group label {
+                    display: block;
+                    font-size: 13px;
+                    color: #344054;
+                    margin-bottom: 7px;
+                }
+
+                .checkout-input {
+                    width: 100%;
+                    min-height: 43px;
+                    border: 1px solid #C8D0DC;
+                    border-radius: 5px;
+                    background-color: #FFFFFF;
+                    color: #344054;
+                    padding: 10px 13px;
+                    font-size: 13px;
+                    outline: 0;
+                }
+
+                .checkout-input:focus {
+                    border-color: #0D6EFD;
+                    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.10);
+                }
+
+                .checkout-error {
+                    color: #D92D20;
+                    font-size: 12px;
+                    margin-top: 5px;
+                }
+
+                .checkout-global-error {
+                    background-color: #FEF3F2;
+                    border: 1px solid #FDA29B;
+                    color: #B42318;
+                    padding: 12px 14px;
+                    margin-bottom: 20px;
+                    font-size: 13px;
+                }
+
+                .checkout-save {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 10px;
+                    color: #344054;
+                    font-size: 13px;
+                    line-height: 1.4;
+                    margin-top: 4px;
+                }
+
+                .checkout-save input {
+                    width: 18px;
+                    height: 18px;
+                    accent-color: #0D4F8B;
+                    flex-shrink: 0;
+                }
+
+                .checkout-summary {
+                    padding-top: 32px;
+                }
+
+                .checkout-products {
+                    max-height: 240px;
+                    overflow-y: auto;
+                    padding-right: 10px;
+                    margin-bottom: 22px;
+                }
+
+                .checkout-product {
+                    display: grid;
+                    grid-template-columns: 36px minmax(0, 1fr) auto;
+                    gap: 18px;
+                    align-items: center;
+                    min-height: 68px;
+                    font-size: 13px;
+                }
+
+                .checkout-product img,
+                .checkout-product-placeholder {
+                    width: 32px;
+                    height: 45px;
+                    object-fit: cover;
+                    background-color: #E5E7EB;
+                }
+
+                .checkout-product-placeholder {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #0D4F8B;
+                }
+
+                .checkout-product-name {
+                    min-width: 0;
+                    color: #111827;
+                    font-weight: 600;
+                }
+
+                .checkout-product-name small {
+                    display: block;
+                    color: #667085;
+                    font-weight: 400;
+                    margin-top: 3px;
+                }
+
+                .checkout-product-total {
+                    white-space: nowrap;
+                    color: #111827;
+                    font-weight: 600;
+                }
+
+                .checkout-total-row {
+                    display: flex;
+                    justify-content: space-between;
+                    gap: 20px;
+                    border-bottom: 1px solid #BFC6D2;
+                    padding: 13px 0;
+                    color: #111827;
+                    font-size: 13px;
+                }
+
+                .checkout-total-row.checkout-grand-total {
+                    border-bottom: 0;
+                    font-weight: 700;
+                }
+
+                .checkout-payment-title {
+                    font-size: 15px;
+                    font-weight: 600;
+                    margin: 22px 0 12px;
+                    color: #111827;
+                }
+
+                .checkout-payment-options {
+                    display: grid;
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                    gap: 12px;
+                }
+
+                .checkout-payment-option {
+                    min-height: 72px;
+                    background-color: #FFFFFF;
+                    border: 1px solid #C8D0DC;
+                    border-radius: 5px;
+                    padding: 12px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    cursor: pointer;
+                    color: #344054;
+                    font-size: 13px;
+                }
+
+                .checkout-payment-option:has(input:checked) {
+                    border-color: #0D6EFD;
+                    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.10);
+                }
+
+                .checkout-payment-option input {
+                    accent-color: #0D6EFD;
+                    flex-shrink: 0;
+                }
+
+                .checkout-payment-icon {
+                    font-size: 20px;
+                    color: #0D4F8B;
+                }
+
+                .checkout-card-brands {
+                    display: block;
+                    margin-top: 3px;
+                    color: #175CD3;
+                    font-weight: 700;
+                    letter-spacing: 0.04em;
+                }
+
+                .checkout-actions {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 12px;
+                    margin-top: 22px;
+                }
+
+                .checkout-btn {
+                    min-height: 48px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: 1px solid #0D4F8B;
+                    border-radius: 2px;
+                    font-size: 13px;
+                    text-decoration: none;
+                    cursor: pointer;
+                }
+
+                .checkout-btn-primary {
+                    background-color: #0D4F8B;
+                    color: #FFFFFF;
+                }
+
+                .checkout-btn-primary:hover {
+                    background-color: #003F63;
+                }
+
+                .checkout-btn-secondary {
+                    background-color: #FFFFFF;
+                    color: #0D4F8B;
+                }
+
+                @media (max-width: 900px) {
+                    .checkout-layout {
+                        grid-template-columns: 1fr;
+                        gap: 24px;
+                    }
+
+                    .checkout-summary {
+                        padding-top: 0;
+                    }
+                }
+
+                @media (max-width: 520px) {
+                    .checkout-payment-options,
+                    .checkout-actions {
+                        grid-template-columns: 1fr;
+                    }
+                }
+            </style>
+
+            <h1 class="checkout-title">[[#{cliente.factura.detalles}]]</h1>
+
+            <form th:action="@{/cliente/factura/confirmar}"
+                  th:object="${checkoutForm}"
+                  method="post"
+                  class="checkout-layout">
+
+                <section class="checkout-fields">
+                    <div th:if="${#fields.hasGlobalErrors()}" class="checkout-global-error">
+                        <div th:each="error : ${#fields.globalErrors()}" th:text="${error}"></div>
+                    </div>
+
+                    <div class="checkout-group">
+                        <label for="nombre">[[#{cliente.factura.nombre}]]</label>
+                        <input id="nombre" type="text" th:field="*{nombre}" class="checkout-input"/>
+                        <div class="checkout-error" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></div>
+                    </div>
+
+                    <div class="checkout-group">
+                        <label for="email">[[#{usuario.email}]]</label>
+                        <input id="email" type="email" th:value="${emailCliente}" class="checkout-input" readonly="readonly"/>
+                    </div>
+
+                    <div class="checkout-group">
+                        <label for="direccion">[[#{cliente.factura.direccion}]]</label>
+                        <input id="direccion" type="text" th:field="*{direccion}" class="checkout-input"
+                               th:placeholder="#{cliente.factura.direccion.ejemplo}"/>
+                        <div class="checkout-error" th:if="${#fields.hasErrors('direccion')}" th:errors="*{direccion}"></div>
+                    </div>
+
+                    <div class="checkout-group">
+                        <label for="direccionSecundaria">[[#{cliente.factura.direccionSecundaria}]]</label>
+                        <input id="direccionSecundaria" type="text" th:field="*{direccionSecundaria}" class="checkout-input"
+                               th:placeholder="#{cliente.factura.direccionSecundaria.ejemplo}"/>
+                        <div class="checkout-error" th:if="${#fields.hasErrors('direccionSecundaria')}" th:errors="*{direccionSecundaria}"></div>
+                    </div>
+
+                    <div class="checkout-group">
+                        <label for="ciudad">[[#{cliente.factura.ciudad}]]</label>
+                        <input id="ciudad" type="text" th:field="*{ciudad}" class="checkout-input"
+                               th:placeholder="#{cliente.factura.ciudad.ejemplo}"/>
+                        <div class="checkout-error" th:if="${#fields.hasErrors('ciudad')}" th:errors="*{ciudad}"></div>
+                    </div>
+
+                    <div class="checkout-group">
+                        <label for="telefono">[[#{usuario.telefono}]]</label>
+                        <input id="telefono" type="tel" th:field="*{telefono}" class="checkout-input"
+                               placeholder="8888-8888"/>
+                        <div class="checkout-error" th:if="${#fields.hasErrors('telefono')}" th:errors="*{telefono}"></div>
+                    </div>
+
+                    <label class="checkout-save">
+                        <input type="checkbox" th:field="*{guardarInformacion}"/>
+                        <span>[[#{cliente.factura.guardar}]]</span>
+                    </label>
+                </section>
+
+                <aside class="checkout-summary">
+                    <div class="checkout-products">
+                        <article th:each="detalle : ${detallesCarrito}" class="checkout-product">
+                            <img th:if="${detalle.libro.rutaImagen != null and !detalle.libro.rutaImagen.isBlank()}"
+                                 th:src="${detalle.libro.rutaImagen}"
+                                 th:alt="${detalle.libro.titulo}"/>
+                            <span th:unless="${detalle.libro.rutaImagen != null and !detalle.libro.rutaImagen.isBlank()}"
+                                  class="checkout-product-placeholder"><i class="fa-solid fa-book"></i></span>
+
+                            <div class="checkout-product-name">
+                                <span th:text="${detalle.libro.titulo}">Libro</span>
+                                <small>[[#{carrito.cantidad}]]: <span th:text="${detalle.cantidad}">1</span></small>
+                            </div>
+
+                            <div class="checkout-product-total">
+                                ₡<span th:text="${#numbers.formatDecimal(detalle.subtotal, 1, 'COMMA', 0, 'POINT')}">0</span>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="checkout-total-row">
+                        <span>[[#{carrito.subtotal}]]</span>
+                        <span>₡<span th:text="${#numbers.formatDecimal(subtotalCarrito, 1, 'COMMA', 0, 'POINT')}">0</span></span>
+                    </div>
+                    <div class="checkout-total-row">
+                        <span>[[#{cliente.carrito.envio}]]</span>
+                        <span>[[#{cliente.carrito.envioGratis}]]</span>
+                    </div>
+                    <div class="checkout-total-row checkout-grand-total">
+                        <span>[[#{carrito.total}]]</span>
+                        <span>₡<span th:text="${#numbers.formatDecimal(totalCarrito, 1, 'COMMA', 0, 'POINT')}">0</span></span>
+                    </div>
+
+                    <h2 class="checkout-payment-title">[[#{cliente.factura.metodoPago}]]</h2>
+                    <div class="checkout-payment-options">
+                        <label class="checkout-payment-option">
+                            <input type="radio" th:field="*{metodoPago}" value="tarjeta"/>
+                            <i class="fa-regular fa-credit-card checkout-payment-icon"></i>
+                            <span>
+                                [[#{cliente.factura.tarjeta}]]
+                                <small class="checkout-card-brands">VISA · Mastercard</small>
+                            </span>
+                        </label>
+
+                        <label class="checkout-payment-option">
+                            <input type="radio" th:field="*{metodoPago}" value="efectivo"/>
+                            <i class="fa-solid fa-money-bill-wave checkout-payment-icon"></i>
+                            <span>[[#{cliente.factura.efectivo}]]</span>
+                        </label>
+                    </div>
+                    <div class="checkout-error" th:if="${#fields.hasErrors('metodoPago')}" th:errors="*{metodoPago}"></div>
+
+                    <div class="checkout-actions">
+                        <button type="submit" class="checkout-btn checkout-btn-primary">
+                            [[#{cliente.factura.confirmar}]]
+                        </button>
+                        <a th:href="@{/cliente/carrito}" class="checkout-btn checkout-btn-secondary">
+                            [[#{cliente.factura.regresarCarrito}]]
+                        </a>
+                    </div>
+                </aside>
+            </form>
+        </main>
+
+        <footer th:replace="~{cliente/fragmentos :: footer}"></footer>
+        <section th:replace="~{cliente/fragmentos :: scripts}"></section>
+    </body>
+</html>

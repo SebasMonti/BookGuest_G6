@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}">
+
+    <head th:replace="~{cliente/fragmentos :: head(#{cliente.compra.confirmada})}"></head>
+
+    <body>
+        <header th:replace="~{cliente/fragmentos :: header('carrito')}"></header>
+
+        <main class="client-page purchase-page">
+            <style>
+                .purchase-page {
+                    padding-top: 46px;
+                    padding-bottom: 60px;
+                    min-height: calc(100vh - 142px);
+                }
+
+                .purchase-title {
+                    font-size: clamp(26px, 3vw, 36px);
+                    font-weight: 600;
+                    margin-bottom: 34px;
+                }
+
+                .purchase-receipt {
+                    background-color: #FFFFFF;
+                    border: 1px solid #DDE2EA;
+                    padding: 28px;
+                    display: grid;
+                    grid-template-columns: minmax(230px, 0.7fr) minmax(350px, 1.3fr);
+                    gap: 50px;
+                    opacity: 0.38;
+                    pointer-events: none;
+                }
+
+                .purchase-data p {
+                    margin: 0 0 15px;
+                    font-size: 13px;
+                    color: #344054;
+                }
+
+                .purchase-data strong {
+                    display: block;
+                    color: #111827;
+                    margin-bottom: 3px;
+                }
+
+                .purchase-product,
+                .purchase-total {
+                    display: flex;
+                    justify-content: space-between;
+                    gap: 20px;
+                    padding: 9px 0;
+                    border-bottom: 1px solid #D0D5DD;
+                    font-size: 13px;
+                }
+
+                .purchase-total {
+                    font-weight: 700;
+                    border-bottom: 0;
+                    margin-top: 8px;
+                }
+
+                .purchase-overlay {
+                    position: fixed;
+                    inset: 0;
+                    background-color: rgba(15, 23, 42, 0.46);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 24px;
+                    z-index: 1050;
+                }
+
+                .purchase-modal {
+                    width: min(100%, 470px);
+                    background-color: #FFFFFF;
+                    border-radius: 6px;
+                    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.22);
+                    text-align: center;
+                    padding: 30px 28px 26px;
+                }
+
+                .purchase-modal h2 {
+                    font-size: 18px;
+                    margin-bottom: 18px;
+                    color: #344054;
+                }
+
+                .purchase-modal p {
+                    font-size: 14px;
+                    color: #344054;
+                    margin-bottom: 18px;
+                }
+
+                .purchase-order {
+                    font-weight: 700;
+                    color: #0D4F8B;
+                    white-space: nowrap;
+                }
+
+                .purchase-check {
+                    color: #0D6EFD;
+                    font-size: 34px;
+                    margin: 8px 0 18px;
+                }
+
+                .purchase-return {
+                    min-width: 120px;
+                    min-height: 42px;
+                    border: 0;
+                    border-radius: 3px;
+                    background-color: #0D6EFD;
+                    color: #FFFFFF;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    text-decoration: none;
+                    font-size: 13px;
+                    padding: 0 20px;
+                }
+
+                @media (max-width: 720px) {
+                    .purchase-receipt {
+                        grid-template-columns: 1fr;
+                        gap: 20px;
+                    }
+                }
+            </style>
+
+            <h1 class="purchase-title">[[#{cliente.factura.detalles}]]</h1>
+
+            <section class="purchase-receipt" aria-hidden="true">
+                <div class="purchase-data">
+                    <p><strong>[[#{cliente.factura.nombre}]]</strong><span th:text="${compra.nombreCliente}">Cliente</span></p>
+                    <p><strong>[[#{usuario.email}]]</strong><span th:text="${compra.emailCliente}">correo</span></p>
+                    <p><strong>[[#{cliente.factura.direccion}]]</strong><span th:text="${compra.direccionEntrega}">Dirección</span></p>
+                    <p><strong>[[#{usuario.telefono}]]</strong><span th:text="${compra.telefono}">Teléfono</span></p>
+                </div>
+
+                <div>
+                    <div th:each="producto : ${compra.productos}" class="purchase-product">
+                        <span><span th:text="${producto.titulo}">Libro</span> × <span th:text="${producto.cantidad}">1</span></span>
+                        <span>₡<span th:text="${#numbers.formatDecimal(producto.subtotal, 1, 'COMMA', 0, 'POINT')}">0</span></span>
+                    </div>
+                    <div class="purchase-product"><span>[[#{cliente.carrito.envio}]]</span><span>[[#{cliente.carrito.envioGratis}]]</span></div>
+                    <div class="purchase-total"><span>[[#{carrito.total}]]</span><span>₡<span th:text="${#numbers.formatDecimal(compra.total, 1, 'COMMA', 0, 'POINT')}">0</span></span></div>
+                </div>
+            </section>
+        </main>
+
+        <div class="purchase-overlay" role="dialog" aria-modal="true" aria-labelledby="purchase-modal-title">
+            <section class="purchase-modal">
+                <h2 id="purchase-modal-title">[[#{cliente.compra.confirmada}]]</h2>
+                <p>
+                    [[#{cliente.compra.ordenGenerada}]]
+                    <span class="purchase-order">N° <span th:text="${compra.numeroOrden}">ORD-1003</span></span>
+                </p>
+                <div class="purchase-check"><i class="fa-solid fa-check"></i></div>
+
+                <a th:href="@{/cliente/inicio}" class="purchase-return">[[#{accion.regresar}]]</a>
+            </section>
+        </div>
+
+        <footer th:replace="~{cliente/fragmentos :: footer}"></footer>
+        <section th:replace="~{cliente/fragmentos :: scripts}"></section>
+    </body>
+</html>
